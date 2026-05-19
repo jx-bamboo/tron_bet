@@ -1,0 +1,48 @@
+<div class="container py-4">
+  <h1 class="text-light mb-4">策略说明</h1>
+
+  <!-- Accordion -->
+  <div class="accordion" id="strategyAccordion">
+    <% strategies = [
+      { id: 'zl2', title: '斩龙2', content: '连续出现2个相同结果，立即<code>反向下注</code>。例如：【单、单】，反向下注【双】。' },
+      { id: 'zl3', title: '斩龙3', content: '<strong>连续</strong>出现3个相同结果，立即<code>反向下注</code>。例如：【单、单、单】，反向下注【双】。' },
+      { id: 'zl829', title: '斩龙8～10', content: '<strong>连续</strong>出现8～10个相同结果，立即<code>反向下注</code>。例如：【单 ×8】，反向下注【双】。<p class="mt-2 mb-0">如果第10个仍是相同结果，则停止本轮，等待新信号。</p>' }
+    ] %>
+
+    <% strategies.each_with_index do |s, index| %>
+      <div class="accordion-item rounded mb-2 overflow-hidden">
+        <h2 class="accordion-header">
+          <button class="accordion-button fw-bold text-light"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapse-<%= s[:id] %>"
+                  aria-expanded="<%= index == 0 ? 'true' : 'false' %>"
+                  aria-controls="collapse-<%= s[:id] %>">
+            <%= s[:title] %>
+          </button>
+        </h2>
+        <div id="collapse-<%= s[:id] %>" class="accordion-collapse collapse <%= 'show' if index == 0 %>">
+          <div class="accordion-body text-light bg-card">
+            <%= raw s[:content] %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- 下注金额提示 -->
+  <div class="row py-5">
+    <div class="col-12 col-md-6 mb-3 mb-md-0">
+      <div class="alert alert-success-custom p-3 rounded">
+        <strong class="d-block mb-1">斩龙（双）下注金额：</strong>
+        <code class="d-block">5, 11, 23, 49, 105, 229, 485, 1101, 2351, 4901</code>
+      </div>
+    </div>
+    <div class="col-12 col-md-6">
+      <div class="alert alert-danger-custom p-3 rounded">
+        <strong class="d-block mb-1">斩龙（单）下注金额：</strong>
+        <code class="d-block">6, 12, 24, 50, 106, 230, 486, 1102, 2352, 4902</code>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,365 @@
+$enable-cssgrid: true;
+:root {
+  --main-bg-color: #2e3440;
+  --bg-card: #1a2536;
+  --bg-wuyelan: #0a1929;
+}
+
+body {
+  font-family:
+    -apple-system, "Helvetica Neue", "Helvetica", "Arial", "PingFang SC",
+    "Hiragino Sans GB", "STHeiti", "Microsoft YaHei", "Microsoft JhengHei",
+    sans-serif;
+}
+
+.bred {
+  border: 1px solid red;
+}
+
+.bgreen {
+  border: 1px solid green;
+}
+
+.main-size {
+  font-size: 0.875rem;
+}
+
+.small-size {
+  font-size: 0.75rem;
+}
+
+.card-main {
+  background-color: var(--main-bg-color) !important;
+  /* 如果想要使用半透明白色叠加效果，可以替换上面的background-color为下面这行 */
+  // background-color: rgba(255, 255, 255, 0.08);
+
+  color: #e0e0e0;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* 轻微阴影增加深度感 */
+}
+
+.bg-top-menu {
+  background-color: var(--bg-card);
+  border-bottom: 1px solid #2a3a4a;
+}
+
+.bg-wuyelan {
+  /* background-color: #101720; //午夜蓝 偏蓝调，夜间阅读更舒适 */
+  background-color: var(--bg-wuyelan);
+}
+
+.bg-table-menu {
+  background-color: #21252b;
+}
+
+.bg-table-header {
+  background-color: #3b4252 !important;
+}
+
+.border-bottom {
+  border-bottom-color: #3b4252 !important; //表格单独
+}
+
+.border-top {
+  border-top-color: #3b4252 !important; //表格单独
+}
+
+.hover-highlight:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  transition: background-color 0.2s ease;
+}
+
+.text-main {
+  color: #101720;
+}
+
+.text-ciyao {
+  color: #b0b0b0;
+}
+
+.bg-qiang {
+  background-color: #ff9f1c;
+}
+
+.card-main .button {
+  background-color: #ff9f1c; /* 强调色 */
+  color: #101720; /* 文字颜色与背景形成对比 */
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.bg-card {
+  background-color: var(--bg-card);
+  border: 1px solid #2a3a4a;
+}
+
+.hover-shadow {
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.hover-shadow:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px #2a3a4a;
+}
+
+.bg-card-item {
+  background-color: #3b4252 !important;
+}
+
+.alert-success-custom {
+  background-color: #1a3d2a;
+  border: 1px solid #2d4d3a;
+  color: #d1fae5;
+}
+
+.alert-danger-custom {
+  background-color: #3d1a2a;
+  border: 1px solid #4d2d3a;
+  color: #fad1e5;
+}
+
+.border-secondary {
+  border-color: #2a3a4a !important;
+}
+
+.table-dark {
+  --bs-table-bg: #1a2536;
+  --bs-table-striped-bg: #1e2a3a;
+  --bs-table-striped-color: #fff;
+  --bs-table-active-bg: #2a3a4a;
+  --bs-table-active-color: #fff;
+  --bs-table-hover-bg: #223042;
+  --bs-table-hover-color: #fff;
+  color: #fff;
+  border-color: #2a3a4a;
+}
+
+/* === 边框颜色 === */
+.text-bg-system-warn {
+  background-color: #d8dee9 !important;
+  color: #101720 !important;
+}
+/* === 悬停效果 === */
+.card-main .rounded-circle:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+//--------------------strategy style---------------------
+/* === Accordion 自定义 === */
+.accordion-item {
+  background-color: #2e3440 !important;
+  border: 1px solid #3b4252 !important;
+}
+
+.accordion-button {
+  background-color: #2e3440 !important;
+  color: #e0e0e0 !important;
+  border: none !important;
+}
+.accordion-button:not(.collapsed) {
+  background-color: #3b4252 !important;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+.accordion-button:focus {
+  border-color: #3b4252 !important;
+  box-shadow: none !important;
+}
+
+.accordion-body {
+  background-color: #2e3440 !important;
+  color: #e0e0e0 !important;
+  border-top: 1px solid #3b4252 !important;
+}
+
+/* === 自定义 Alert === */
+.alert-success-custom {
+  background-color: rgba(76, 175, 80, 0.15);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  color: #a5d6a7;
+}
+
+.alert-danger-custom {
+  background-color: rgba(239, 83, 80, 0.15);
+  border: 1px solid rgba(239, 83, 80, 0.3);
+  color: #f28b82;
+}
+
+/* === 代码样式 === */
+code {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.9em;
+}
+
+// ----------------footer------------------
+.footer-link {
+  transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+  color: #ffffff !important;
+}
+
+.nav.border-bottom {
+  border-color: #3b4252 !important;
+}
+
+.text-muted {
+  color: #8a93a5 !important; /* 比 text-secondary 更淡 */
+}
+
+/* 按钮：outline-light 在深色背景下太刺眼，改为自定义 */
+.btn-outline-light {
+  color: #ccd6dd;
+  border-color: #3a4a5a;
+}
+
+.btn-outline-light:hover {
+  color: #fff;
+  background-color: #2a3a4a;
+  border-color: #4a5a6a;
+}
+
+// -----------------member------------------
+.member-card {
+  background: linear-gradient(145deg, #1a1d23, #16181d);
+  border: 1px solid #2a2f3a;
+  transition: all 0.3s ease;
+}
+
+.member-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  border-color: #3a3f4a;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-info {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+.card-info-label {
+  font-size: 0.75rem;
+  color: #adb5bd;
+  margin-bottom: 0.25rem;
+}
+
+.card-info-value {
+  font-size: 0.875rem;
+  color: #f8f9fa;
+}
+
+.strategy-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.strategy-badge.zl2 {
+  background: linear-gradient(
+    135deg,
+    rgba(13, 110, 253, 0.15),
+    rgba(13, 110, 253, 0.25)
+  );
+  color: #6ea8fe;
+  border: 1px solid rgba(13, 110, 253, 0.3);
+}
+
+.strategy-badge.zl3 {
+  background: linear-gradient(
+    135deg,
+    rgba(25, 135, 84, 0.15),
+    rgba(25, 135, 84, 0.25)
+  );
+  color: #75b798;
+  border: 1px solid rgba(25, 135, 84, 0.3);
+}
+
+.strategy-badge.zl829 {
+  background: linear-gradient(
+    135deg,
+    rgba(111, 66, 193, 0.15),
+    rgba(111, 66, 193, 0.25)
+  );
+  color: #b197fc;
+  border: 1px solid rgba(111, 66, 193, 0.3);
+}
+
+.failure-badge {
+  display: inline-block;
+  width: 2.5rem;
+  height: 2.5rem;
+  line-height: 2.5rem;
+  border-radius: 50%;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.failure-badge.low {
+  background: linear-gradient(
+    135deg,
+    rgba(25, 135, 84, 0.2),
+    rgba(25, 135, 84, 0.3)
+  );
+  color: #75b798;
+  border: 2px solid rgba(25, 135, 84, 0.4);
+}
+
+.failure-badge.medium {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 193, 7, 0.2),
+    rgba(255, 193, 7, 0.3)
+  );
+  color: #ffda6a;
+  border: 2px solid rgba(255, 193, 7, 0.4);
+}
+
+.failure-badge.high {
+  background: linear-gradient(
+    135deg,
+    rgba(220, 53, 69, 0.2),
+    rgba(220, 53, 69, 0.3)
+  );
+  color: #ea868f;
+  border: 2px solid rgba(220, 53, 69, 0.4);
+}
+
+.bot-card {
+  border-left: 3px solid #0dcaf0;
+}
+
+/* 动画效果 */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.member-card.running {
+  animation: pulse 2s infinite;
+}

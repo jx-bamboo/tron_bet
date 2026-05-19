@@ -1,0 +1,103 @@
+<%
+=begin
+%>
+<div class="text-center">
+
+
+<h2>Log ininin</h2>
+
+<%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+  <div class="field">
+    <%= f.label :email %><br>
+    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :password %><br>
+    <%= f.password_field :password, autocomplete: "current-password" %>
+  </div>
+
+  <% if devise_mapping.rememberable? %>
+    <div class="field">
+      <%= f.check_box :remember_me %>
+      <%= f.label :remember_me %>
+    </div>
+  <% end %>
+
+  <div class="actions">
+    <%= f.submit "Log in" %>
+  </div>
+<% end %>
+
+<%= render "admins/shared/links" %>
+</div>
+
+<%
+=end
+%>
+<style>
+  body {
+  display: flex;
+  height: 100vh;
+  min-height: 35rem;
+  align-items: center;
+  justify-content: center;
+
+  background-color: #1e5192;
+  background-image: url(<%= asset_path('back.jpeg') %>);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.card-wrap {
+  position: relative;
+  margin: 0 auto;
+}
+
+@media(min-width:769px) {
+  .card-wrap {
+    max-width: 450px;
+  }
+}
+</style>
+
+<div class="container">
+  <div class="card-wrap opacity-75">
+    <div class="card border-0 shadow-lg card-login py-3">
+      <div class="card-body log-card-body">
+        <h2 class="card-title pt-4">歡迎登錄！</h2>
+        <div class="mb-3">
+          <% if notice %>
+            <span class="text-bg-danger rounded p-2"><%= notice %></span><br/>
+          <% end %>
+          <% if alert %>
+            <span class="text-bg-danger rounded p-2"><%= alert %></span><br/>
+          <% end %>
+          <% if flash[:recaptcha_error] %>
+						<p class="bg-warning rounded p-2"><%= flash[:recaptcha_error] %></p>
+					<% end %>
+        </div>
+        <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: {'data-turbo' => "false"}, class: 'form-floating') do |f| %>
+          <div class="form-floating mb-3">
+            <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control", required:"required", placeholder: "邮箱" %>
+            <%= f.label :email %>
+          </div>
+          <div class="form-floating mb-3">
+            <%= f.password_field :password, autocomplete: "current-password", class: "form-control", required:"required", placeholder: "密码", minlength: 6 %>
+            <%= f.label :password %>
+          </div>
+          <%#= recaptcha_v3(action: 'login') %>
+          <div class="mb-3">
+            <%#= recaptcha_tags %>
+          </div>
+          <div>
+            <%= f.submit "登錄",class: "btn btn-lg btn-outline-secondary" %>
+          </div>
+          <%= link_to "註冊", new_registration_path(resource_name), class: "btn btn-sm mt-1" %>
+          <%= link_to "首页", "/", class: "btn btn-sm mt-1" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

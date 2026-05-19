@@ -1,0 +1,117 @@
+<div class="robot-control-single-row card-main p-4 rounded shadow-sm my-3">
+    <div class="row align-items-center">
+      <!-- 状态信息 -->
+      <div class="col-md-8 mb-3 mb-md-0">
+        <div class="d-flex align-items-center">
+          <div class="me-3">
+            <i class="bi bi-robot fs-4 text-primary"></i>
+          </div>
+          
+          <% if @member.bot %>
+            <div class="flex-grow-1">
+              <div class="row g-2">
+                <div class="col-3">
+                  <div class="text-center">
+                    <div class="text-secondary small">启动资金</div>
+                    <div class="text-success fw-bold">
+                      <%= number_with_precision(@member.bot.start_balance, precision: 2) %>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-3">
+                  <div class="text-center">
+                    <div class="text-secondary small">上次下注</div>
+                    <div class="<%= @member.bot.bet_amount_index.to_i > 0 ? 'text-warning' : 'text-secondary' %> fw-bold">
+                      <%= @member.bot.bet_amount_index || 0 %>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-3">
+                  <div class="text-center">
+                    <div class="text-secondary small">失败次数</div>
+                    <div class="text-danger fw-bold">
+                      <%= @member.bot.failed_times %>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-3">
+                  <div class="text-center">
+                    <div class="text-secondary small">当前方向</div>
+                    <div class="text-info fw-bold">
+                      <%= @member.bot.current_parity_text.presence || "-" %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% else %>
+            <div class="text-secondary">
+              <i class="bi bi-info-circle me-2"></i>机器人未启动
+            </div>
+          <% end %>
+        </div>
+      </div>
+      
+      <!-- 操作按钮 -->
+      <div class="col-md-4">
+        <div class="d-flex gap-2">
+          <% if @member.active? %>
+            <%= link_to "停止机器人", 
+                stop_bot_member_path(@member),
+                class: "btn btn-danger flex-grow-1",
+                data: { 
+                  turbo_method: :post,
+                  confirm: "确定要停止「#{@member.username}」的机器人吗？"
+                } %>
+          <% else %>
+            <%= link_to "启动机器人", 
+                start_bot_member_path(@member),
+                class: "btn btn-success flex-grow-1",
+                data: {
+                  turbo_method: :post,
+                  turbo_confirm: "确定要启动「#{@member.username}」的机器人吗？"
+                } %>
+          <% end %>
+
+          
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              <i class="bi bi-three-dots"></i>
+            </button>
+            <ul class="dropdown-menu bg-dark">
+              <li>
+                <%= link_to "编辑会员", 
+                    edit_member_path(@member), 
+                    class: "dropdown-item text-secondary", data: {turbo: false} %>
+              </li>
+              <li>
+                <%= link_to "返回列表", 
+                    members_path, 
+                    class: "dropdown-item text-secondary", data: {turbo: false} %>
+              </li>
+              <li>
+                <%= link_to "下注记录", 
+                    "#",
+                    class: "dropdown-item text-secondary", data: {turbo: false} %>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <%= button_to "删除钱包", 
+                    @member,
+                    method: :delete,
+                    class: "dropdown-item text-danger",
+                    form: { 
+                      data: { 
+                        turbo_confirm: "确定要删除成员「#{@member.username}」吗？"
+                      }
+                    } %>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

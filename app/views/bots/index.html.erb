@@ -1,0 +1,16 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Bots" %>
+
+<h1>Bots</h1>
+
+<div id="bots">
+  <% @bots.each do |bot| %>
+    <%= render bot %>
+    <p>
+      <%= link_to "Show this bot", bot %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New bot", new_bot_path %>

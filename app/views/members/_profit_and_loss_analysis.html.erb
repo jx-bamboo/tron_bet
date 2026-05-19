@@ -1,0 +1,436 @@
+<div class="row g-3">
+    <!-- 盈利概览卡片 -->
+    <div class="col-lg-8">
+      <div class="card card-modern">
+        <div class="card-header border-0 bg-transparent">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <i class="bi bi-graph-up-arrow me-2 text-primary"></i><span class="text-light">盈利分析</span>
+            </h5>
+            <span class="badge bg-primary-subtle text-primary">
+              <i class="bi bi-info-circle me-1"></i>赔率1.95倍
+            </span>
+          </div>
+        </div>
+        
+        <div class="card-body py-3">
+          <div class="row g-3">
+            <!-- 今日盈利 -->
+            <div class="col-md-6 col-lg-3">
+              <div class="stat-card-modern <%= @today_stats[:total_profit] >= 0 ? 'profit-positive' : 'profit-negative' %>">
+                <div class="stat-icon">
+                  <i class="bi bi-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-label">今日盈利</div>
+                  <div class="stat-value">
+                    <%= number_to_currency(@today_stats[:total_profit], unit: 'TRX', format: "%n") %>
+                  </div>
+                  <div class="stat-meta">
+                    <span class="badge bg-dark-subtle text-dark">
+                      ROI: <%= @today_stats[:roi] %>%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 总盈利 -->
+            <div class="col-md-6 col-lg-3">
+              <div class="stat-card-modern <%= @total_stats[:all_time][:total_profit] >= 0 ? 'profit-positive' : 'profit-negative' %>">
+                <div class="stat-icon">
+                  <i class="bi bi-trophy"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-label">总盈利</div>
+                  <div class="stat-value">
+                    <%= number_to_currency(@total_stats[:all_time][:total_profit], unit: 'TRX', format: "%n") %>
+                  </div>
+                  <div class="stat-meta">
+                    <span class="badge bg-dark-subtle text-dark">
+                      ROI: <%= @total_stats[:all_time][:roi] %>%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 总收益 -->
+            <div class="col-md-6 col-lg-3">
+              <div class="stat-card-modern stat-neutral">
+                <div class="stat-icon">
+                  <i class="bi bi-cash-coin"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-label">总收益</div>
+                  <div class="stat-value">
+                    <%= number_to_currency(@total_stats[:all_time][:total_return], unit: 'TRX', format: "%n") %>
+                  </div>
+                  <div class="stat-meta">
+                    <small class="text-muted">成功×1.95</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 总下注 -->
+            <div class="col-md-6 col-lg-3">
+              <div class="stat-card-modern stat-neutral">
+                <div class="stat-icon">
+                  <i class="bi bi-stack"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-label">总下注</div>
+                  <div class="stat-value">
+                    <%= number_to_currency(@total_stats[:all_time][:total_wagered], unit: 'TRX', format: "%n") %>
+                  </div>
+                  <div class="stat-meta">
+                    <span class="badge bg-dark-subtle text-dark">
+                      <%= @total_stats[:all_time][:total_bets] %> 次
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 详细统计 -->
+          <div class="detailed-stats mt-4 pt-3 border-top border-secondary">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="d-flex align-items-center">
+                  <div class="me-3">
+                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                  </div>
+                  <div>
+                    <div class="text-secondary small">胜利总数</div>
+                    <div class="text-light fw-bold"><%= @total_stats[:all_time][:win_bets] %></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="d-flex align-items-center">
+                  <div class="me-3">
+                    <i class="bi bi-x-circle-fill text-danger fs-5"></i>
+                  </div>
+                  <div>
+                    <div class="text-secondary small">失败总数</div>
+                    <div class="text-light fw-bold"><%= @total_stats[:all_time][:lose_bets] %></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="d-flex align-items-center">
+                  <div class="me-3">
+                    <i class="bi bi-percent text-info fs-5"></i>
+                  </div>
+                  <div>
+                    <div class="text-secondary small">平均下注</div>
+                    <div class="text-light fw-bold">
+                      <%= number_to_currency(@total_stats[:all_time][:avg_bet_amount] || 0, unit: 'TRX', format: "%n") %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+    
+    <!-- 盈亏平衡分析卡片 -->
+    <div class="col-lg-4">
+      <div class="card card-modern h-100">
+        <div class="card-header border-0 bg-transparent">
+          <h5 class="mb-0">
+            <i class="bi bi-speedometer2 me-2 text-warning"></i><span class="text-light">盈亏平衡分析</span>
+          </h5>
+        </div>
+        
+        <div class="card-body py-3 d-flex flex-column">
+          <!-- 胜率对比 -->
+          <div class="text-center">
+            <div class="d-flex justify-content-between align-items-center py-2">
+              <div class="text-start">
+                <div class="text-secondary small">当前胜率</div>
+                <div class="<%= @total_stats[:all_time][:win_rate] >= Member::BREAK_EVEN_WIN_RATE ? 'text-success' : 'text-danger' %> fw-bold fs-4">
+                  <%= @total_stats[:all_time][:win_rate] %>%
+                </div>
+              </div>
+              
+              <div class="text-end">
+                <div class="text-secondary small">要求胜率</div>
+                <div class="text-warning fw-bold fs-4">
+                  <%= Member::BREAK_EVEN_WIN_RATE %>%
+                </div>
+              </div>
+            </div>
+            
+            <!-- 进度条 -->
+            <div class="progress-container py-2">
+              <div class="d-flex justify-content-between small">
+                <span class="text-secondary">0%</span>
+                <%# <span class="text-warning fw-bold">盈亏点</span> %>
+                <span class="text-secondary">100%</span>
+              </div>
+              
+              <div class="progress-modern">
+                <div class="progress-bar-current" 
+                    style="width: <%= [@total_stats[:all_time][:win_rate], 100].min %>%;">
+                  <div class="progress-label">
+                    <%= @total_stats[:all_time][:win_rate] %>%
+                  </div>
+                </div>
+                
+                <div class="progress-marker" 
+                    style="left: <%= Member::BREAK_EVEN_WIN_RATE %>%;">
+                  <div class="marker-dot"></div>
+                  <div class="marker-label">平衡点</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 状态指示 -->
+            <div class="py-2 mt-3">
+              <% if @total_stats[:all_time][:win_rate] >= Member::BREAK_EVEN_WIN_RATE %>
+                <span class="badge bg-success-subtle text-success border border-success py-2 px-3">
+                  <i class="bi bi-check-circle me-1"></i>
+                  已达到盈亏平衡
+                </span>
+              <% else %>
+                <span class="badge bg-danger-subtle text-danger border border-danger py-2 px-3">
+                  <i class="bi bi-exclamation-circle me-1"></i>
+                  未达到盈亏平衡
+                </span>
+              <% end %>
+            </div>
+          </div>
+          
+          
+
+
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+  .card-modern {
+    background: rgba(26, 29, 35, 0.8);
+    /* backdrop-filter: blur(10px); */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .card-modern .card-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .stat-card-modern {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card-modern:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .stat-card-modern.profit-positive {
+    border-left: 4px solid #20c997;
+  }
+
+  .stat-card-modern.profit-negative {
+    border-left: 4px solid #dc3545;
+  }
+
+  .stat-card-modern.stat-neutral {
+    border-left: 4px solid #6c757d;
+  }
+
+  .stat-card-modern .stat-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .stat-card-modern.profit-positive .stat-icon {
+    background: rgba(32, 201, 151, 0.2);
+    color: #20c997;
+  }
+
+  .stat-card-modern.profit-negative .stat-icon {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+  }
+
+  .stat-card-modern.stat-neutral .stat-icon {
+    background: rgba(108, 117, 125, 0.2);
+    color: #adb5bd;
+  }
+
+  .stat-card-modern .stat-content {
+    flex: 1;
+  }
+
+  .stat-card-modern .stat-label {
+    font-size: 0.75rem;
+    color: #adb5bd;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-card-modern .stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #f8f9fa;
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-card-modern .stat-meta {
+    font-size: 0.75rem;
+  }
+/*
+  .badge.bg-primary-subtle {
+    background-color: rgba(13, 110, 253, 0.15);
+    color: #6ea8fe;
+  }
+
+  .badge.bg-dark-subtle {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #adb5bd;
+  }
+
+  .badge.bg-success-subtle {
+    background-color: rgba(25, 135, 84, 0.15);
+    color: #75b798;
+  }
+
+  .badge.bg-danger-subtle {
+    background-color: rgba(220, 53, 69, 0.15);
+    color: #ea868f;
+  }
+*/
+  /* 进度条样式 */
+  .progress-container {
+    position: relative;
+    padding: 0 0.5rem;
+  }
+
+  .progress-modern {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    position: relative;
+    overflow: visible;
+  }
+
+  .progress-bar-current {
+    height: 100%;
+    background: linear-gradient(90deg, #0dcaf0, #20c997);
+    border-radius: 4px;
+    position: relative;
+    transition: width 1s ease-in-out;
+  }
+
+  .progress-bar-current .progress-label {
+    position: absolute;
+    right: 0;
+    top: -20px;
+    background: #0dcaf0;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transform: translateX(50%);
+    white-space: nowrap;
+  }
+
+  .progress-bar-current .progress-label::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid #0dcaf0;
+  }
+
+  .progress-marker {
+    position: absolute;
+    top: -6px;
+    transform: translateX(-50%);
+    z-index: 2;
+  }
+
+  .progress-marker .marker-dot {
+    width: 12px;
+    height: 12px;
+    background: #ffc107;
+    border-radius: 50%;
+    border: 2px solid #1a1d23;
+    margin: 0 auto 4px;
+  }
+
+  .progress-marker .marker-label {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    color: #ffc107;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  /* 公式框 */
+  .formula-box {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+
+  /* 响应式调整 */
+  @media (max-width: 768px) {
+    .stat-card-modern {
+      padding: 0.75rem;
+    }
+    
+    .stat-card-modern .stat-value {
+      font-size: 1.1rem;
+    }
+    
+    .progress-marker .marker-label {
+      display: none;
+    }
+    
+    .progress-bar-current .progress-label {
+      display: none;
+    }
+  }
+  </style>

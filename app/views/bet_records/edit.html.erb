@@ -1,0 +1,12 @@
+<% content_for :title, "Editing bet record" %>
+
+<h1>Editing bet record</h1>
+
+<%= render "form", bet_record: @bet_record %>
+
+<br>
+
+<div>
+  <%= link_to "Show this bet record", @bet_record %> |
+  <%= link_to "Back to bet records", bet_records_path %>
+</div>

@@ -1,0 +1,25 @@
+<footer class="py-4 mt-5">
+  <div class="container">
+    <ul class="nav justify-content-center border-bottom pb-3 mb-3">
+      <li class="nav-item">
+        <%= link_to "首页", "/", class: "nav-link px-2 text-secondary footer-link", data: {turbo: "false"} %>
+      </li>
+      <li class="nav-item">
+        <%= link_to "策略", "/home/strategy", class: "nav-link px-2 text-secondary footer-link", data: {turbo: "false"} %>
+      </li>
+      <li class="nav-item">
+        <%= link_to "钱包管理", "/members", class: "nav-link px-2 text-secondary footer-link", data: {turbo: "false"} %>
+      </li>
+      <li class="nav-item">
+        <%= link_to "FAQ", "#", class: "nav-link px-2 text-secondary footer-link", data: {turbo: "false"} %>
+      </li>
+      <li class="nav-item">
+        <%= link_to "关于", "#", class: "nav-link px-2 text-secondary footer-link", data: {turbo: "false"} %>
+      </li>
+    </ul>
+
+    <p class="text-center text-muted mb-0">
+      © <%= Date.current.year %> Your Company, Inc. All rights reserved.
+    </p>
+  </div>
+</footer>

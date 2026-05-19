@@ -1,0 +1,10 @@
+<p style="color: green"><%= notice %></p>
+
+<%= render @tron_wallet %>
+
+<div>
+  <%= link_to "Edit this tron wallet", edit_tron_wallet_path(@tron_wallet) %> |
+  <%= link_to "Back to tron wallets", tron_wallets_path %>
+
+  <%= button_to "Destroy this tron wallet", @tron_wallet, method: :delete %>
+</div>

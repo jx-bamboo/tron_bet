@@ -1,0 +1,16 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Bet records" %>
+
+<h1>Bet records</h1>
+
+<div id="bet_records">
+  <% @bet_records.each do |bet_record| %>
+    <%= render bet_record %>
+    <p>
+      <%= link_to "Show this bet record", bet_record %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New bet record", new_bet_record_path %>

@@ -1,0 +1,49 @@
+<div class="px-2 pt-3 pb-2">
+  <div class="rounded-4 overflow-hidden card-main">
+    <div class="d-flex flex-row-reverse gap-3 p-3 overflow-auto">
+      <% @groups.each do |group| %>
+
+        <div class="d-flex flex-column align-items-center gap-2 position-relative rounded-pill bg-card-item p-2">
+          <% if group.empty? %>
+            <div class="p-2 border shadow-sm rounded text-bg-system-warn">
+              系统重启
+            </div>
+          <% else %>
+            <% group.each do |item| %>
+              <div class="d-flex justify-content-center align-items-center rounded-circle text-white fw-bold"
+                   style="width: 40px; height: 40px; font-size: 0.875rem;
+                          background-color: <%= item[:color] %>;
+                          border-color: <%= item[:color] %>;">
+                <%= item[:result] %>
+              </div>
+            <% end %>
+          <% end %>
+
+          <!-- 底部占位，保持所有列对齐 -->
+          <div style="height: 20px;"></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<div class="p-2 mt-4">
+  <div class="rounded-4 overflow-hidden card-main">
+    <div class="container-fluid overflow-auto main-size" style="height: 400px;">
+      <div class="row bg-table-header text-light sticky-top py-2">
+        <div class="col">编号</div>
+        <div class="col">哈希</div>
+        <div class="col">结果</div>
+        <div class="col">时间</div>
+      </div>
+      <% @records.each do |re| %>
+        <div class="row border-bottom hover-highlight text-ciyao">
+          <div class="col"><%= re.number %></div>
+          <div class="col">...<%= re.block_hash.slice(-10, 10) %></div>
+          <div class="col"><%= re.parity == 1 ? "单" : "双" %></div>
+          <div class="col"><%= re.block_time %></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

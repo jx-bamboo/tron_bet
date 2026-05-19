@@ -1,0 +1,49 @@
+<div class="card-main p-4 rounded shadow-sm">
+  <%= form_with(model: member) do |form| %>
+    <% if member.errors.any? %>
+      <div class="alert alert-danger mb-4" role="alert">
+        <h5 class="alert-heading">
+          <%= pluralize(member.errors.count, "error") %> prohibited this member from being saved:
+        </h5>
+
+        <ul class="mb-0 mt-2 ps-3">
+          <% member.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div>
+      <div class="mb-3">
+        <label for="member_username" class="form-label text-light">用户名</label>
+        <%= form.text_field :username, class: "form-control", aria: {describedby: "usernameHelp"} %>
+        <div id="member_username" class="form-text text-secondary">We'll never share your data with anyone else.</div>
+      </div>
+      <div class="mb-3">
+        <label for="member_tron_address" class="form-label text-light">TRON地址</label>
+        <%= form.text_field :tron_address, class: "form-control" %>
+      </div>
+      <div class="mb-3">
+        <label class="form-check-label text-light" for="member_tron_private_key">TRON私钥</label>
+        <%= form.text_field :tron_private_key, class: "form-control" %>
+        <div class="form-text text-warning">⚠️ 私钥极其敏感，已采用非对称加密安全存储。</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-check-label text-light" for="member_strategy">策略</label>
+
+        <select class="form-select" name="member[strategy]" aria-label="Default select example">
+          <option selected>请选择一个策略</option>
+          <option value="zl2">斩龙2</option>
+          <option value="zl3">斩龙3</option>
+          <option value="zl4">斩龙4</option>
+          <option value="zl5_8">斩龙5~8</option>
+          <!-- <option value="zl7_9">斩龙7～9</option> -->
+        </select>
+      </div>
+      <div>
+        <%= form.submit "提交", class: "btn btn-outline-secondary" %>
+      </div>
+    </div>
+  <% end %>
+</div>

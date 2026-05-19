@@ -1,0 +1,67 @@
+<style>
+  body {
+  display: flex;
+  height: 100vh;
+  min-height: 35rem;
+  align-items: center;
+  justify-content: center;
+
+  background-color: #1e5192;
+  background-image: url(<%= asset_path('back.jpeg') %>);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.card-wrap {
+  position: relative;
+  margin: 0 auto;
+}
+
+@media(min-width:769px) {
+  .card-wrap {
+    max-width: 450px;
+  }
+}
+</style>
+<div class="container">
+  <div class="card-wrap opacity-75">
+    <div class="card border-0 shadow-lg card-login py-3">
+      <div class="card-body log-card-body">
+        <h2 class="card-title pt-4">欢迎註冊！</h2>
+        <div class="mb-3 text-warning">
+          <% if notice %>
+            <span class="notice"><%= notice %></span>
+          <% end %>
+          <% if alert %>
+            <span class="alert"><%= alert %></span>
+          <% end %>
+        </div>
+        <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: {'data-turbo' => "false"}, class: 'form-floating') do |f| %>
+          <%= render "admins/shared/error_messages", resource: resource %>
+          <div class="mb-3">
+            <%= f.label :email, class: "" %>
+            <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control", required:"required", placeholder: "name@example.com" %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :password %>
+            <% if @minimum_password_length %>
+              <em>(<%= @minimum_password_length %> characters minimum)</em>
+            <% end %><br />
+            <%= f.password_field :password, autocomplete: "new-password", class: "form-control", required:"required", placeholder: "******", minlength: 6 %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :password_confirmation %>
+            <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-control", required:"required", placeholder: "******", minlength: 6 %>
+          </div>
+          <div>
+            <%= f.submit "註冊", class: "btn btn-lg shadow-lg w-auto btn-outline-secondary" %>
+          </div>
+          <%= link_to "登錄", new_session_path(resource_name), class: "btn btn-sm mt-1" %>
+          <%= link_to "首页", "/", class: "btn btn-sm mt-1" %>
+
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

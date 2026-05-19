@@ -1,0 +1,21 @@
+<div class="container py-4">
+
+  <% content_for :title, "Members" %>
+  <h1 class="text-light mb-4">钱包</h1>
+  <div id="members" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 main-size">
+    <% @members.each do |member| %>
+      <div class="col">
+        <div class="bg-card hover-shadow p-4 h-100 d-flex flex-column rounded">
+          <%= render member %>
+          <div class="mt-auto pt-3">
+            <%= link_to "查看详情", member, class: "btn btn-outline-light w-100 mt-2", data: {turbo: "false"} %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="mt-5 text-center">
+    <%= link_to "新增钱包", new_member_path, class: "btn btn-outline-light px-4 py-2", data: {turbo: "false"} %>
+  </div>
+</div>

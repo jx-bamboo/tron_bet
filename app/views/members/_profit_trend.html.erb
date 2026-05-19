@@ -1,0 +1,68 @@
+<div class="bg-card rounded my-3">
+    <div class="bg-transparent p-2">
+      <div class="fw-bold">
+        <i class="bi bi-clock-history me-2 text-info"></i> <span class="text-light">近期盈利趋势</span>
+      </div>
+    </div>
+
+    <div class="main-size">
+        <div class="bg-table-header">
+          <div class="row m-0 py-2">
+            <div class="col text-secondary">日期</div>
+            <div class="col text-secondary">下注次数</div>
+            <div class="col text-secondary">胜/负</div>
+            <div class="col text-secondary">胜率</div>
+            <div class="col text-secondary">盈利</div>
+            <div class="col text-secondary">盈亏状态</div>
+          </div>
+        </div>
+
+        <div class="main-size overflow-auto text-nowrap text-break">
+          <% @daily_profit_trend.each do |daily| %>
+            <div class="row align-items-center border-top hover-highlight m-0 py-1 flex-nowrap">
+              <div class="col text-light">
+                <%= daily[:date] %>
+              </div>
+              <div class="col text-light"><%= daily[:total_bets] %></div>
+              <div class="col">
+                <span class="text-success"><%= daily[:win_bets] %></span>
+                <span class="text-light"> / </span>
+                <span class="text-danger"><%= daily[:lose_bets] %></span>
+              </div>
+              <div class="col">
+                <span class="<%= daily[:win_rate] >= Member::BREAK_EVEN_WIN_RATE ? 'text-success' : 'text-danger' %>">
+                  <%= daily[:win_rate] %>%
+                </span>
+                <br>
+                <div class="text-muted small-size">
+                  要求: <%= Member::BREAK_EVEN_WIN_RATE %>%
+                </div>
+              </div>
+              <div class="col <%= daily[:total_profit] >= 0 ? 'text-success' : 'text-danger' %>">
+                <%= number_to_currency(daily[:total_profit], unit: 'TRX', format: "%n %u") %>
+                <br>
+                <div class="text-muted small-size">
+                  下注: <%= number_to_currency(daily[:total_wagered], unit: 'TRX', format: "%n") %>
+                </div>
+              </div>
+              <div  class="col">
+                <% if daily[:total_profit] > 0 %>
+                  <span class="badge bg-success">盈利</span>
+                <% elsif daily[:total_profit] < 0 %>
+                  <span class="badge bg-danger">亏损</span>
+                <% else %>
+                  <span class="badge bg-secondary">持平</span>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      
+      <% if @daily_profit_trend.empty? %>
+        <div class="text-center text-muted py-4">
+          <i class="bi bi-calendar-x fs-1"></i>
+          <p class="mt-2">暂无盈利数据</p>
+        </div>
+      <% end %>
+    </div>
+  </div>

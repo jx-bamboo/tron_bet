@@ -1,0 +1,11 @@
+<% content_for :title, "New member" %>
+
+<div class="container py-4">
+  <h1 class="text-light mb-4">New Member</h1>
+
+  <%= render "form", member: @member %>
+
+  <div class="mt-4">
+    <%= link_to "← Back to members", members_path, class: "text-light d-inline-block" %>
+  </div>
+</div>

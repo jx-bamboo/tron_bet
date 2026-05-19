@@ -1,0 +1,16 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Strategies" %>
+
+<h1>Strategies</h1>
+
+<div id="strategies">
+  <% @strategies.each do |strategy| %>
+    <%= render strategy %>
+    <p>
+      <%= link_to "Show this strategy", strategy %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New strategy", new_strategy_path %>

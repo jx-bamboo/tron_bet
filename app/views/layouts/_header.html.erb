@@ -1,0 +1,42 @@
+<nav class="navbar navbar-expand-lg bg-top-menu">
+  <div class="container-fluid">
+    <a class="navbar-brand text-light" data-turbo="false" href="/">首页</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link text-light" data-turbo="false" aria-current="page" href="/home/strategy" data-turber="false">策略</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-light" data-turbo="false" href="/members">钱包管理</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link text-light dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            珠盘图
+          </a>
+          <ul class="dropdown-menu bg-secondary border">
+            <li><a class="dropdown-item" data-turbo="false" href="/home/map">内部记录图</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/home/outside">外部实时图</a></li>
+          </ul>
+        </li>
+        <% if admin_signed_in? %>
+          <li class="nav-item">
+            <a href="/tron_wallets" class="nav-link text-light" data-turbo="false" aria-disabled="true">生成地址</a>
+          </li>
+        <% end %>
+      </ul>
+      <!--<form class="d-flex" role="search">
+        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+        <button class="btn btn-outline-success" type="submit">Search</button>
+      </form>-->
+      <% if admin_signed_in? %>
+        <%= link_to "Log out", destroy_admin_session_path(), method: :delete, class: "btn btn-outline-warning", data: { turbo: true, turbo_method: :delete, turbo_confirm: "Are you sure?" } %>
+      <% else %>
+        <%= link_to "Log in", new_admin_session_path(), class: "btn btn-outline-light", data: { turbo: false } %>
+      <% end %>
+    </div>
+  </div>
+</nav>

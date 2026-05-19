@@ -1,0 +1,10 @@
+<p style="color: green"><%= notice %></p>
+
+<%= render @strategy %>
+
+<div>
+  <%= link_to "Edit this strategy", edit_strategy_path(@strategy) %> |
+  <%= link_to "Back to strategies", strategies_path %>
+
+  <%= button_to "Destroy this strategy", @strategy, method: :delete %>
+</div>

@@ -1,0 +1,125 @@
+<div class="bg-card rounded">
+    <div class="bg-transparent">
+      <div class="d-flex justify-content-between p-2">
+        <div class="fw-bold">
+          <i class="bi bi-clock-history me-2 text-info"></i> <span class="text-light">最新下注</span>
+        </div>
+        <div class="badge text-info small-size">
+          <%= @recent_bets.count %> 条记录
+        </div>
+      </div>
+    </div>
+    
+    <div class="main-size">
+      <div class="bg-table-header">
+        <div class="row m-0 py-2">
+          <div class="col text-secondary">时间(UTC+8)</div>
+          <div class="col text-secondary">区块号</div>
+          <div class="col text-secondary">方向</div>
+          <div class="col text-secondary">金额</div>
+          <div class="col text-secondary">结果</div>
+          <div class="col text-secondary">状态</div>
+          <div class="col text-secondary">交易ID</div>
+        </div>
+      </div>
+
+      <% if @recent_bets.any? %>
+        <div class="overflow-auto text-nowrap text-break">
+            
+          <% @recent_bets.each do |bet| %>
+            <div class="row align-items-center border-top hover-highlight m-0 py-1 flex-nowrap">
+              <div class="col">
+                <div class="text-light">
+                  <%= bet.created_at.in_time_zone("Asia/Shanghai").strftime('%H:%M') %>
+                </div>
+                <div class="text-muted small-size opacity-25">
+                  <%= bet.created_at.in_time_zone("Asia/Shanghai").strftime('%m-%d') %>
+                </div>
+              </div>
+              
+              <div class="col align-middle">
+                <code class="text-light small-size">
+                  <%= bet.block_record&.number || 'N/A' %>
+                </code>
+              </div>
+              
+              <div class="col">
+                <span class="badge <%= bet_parity_badge_class(bet.bet_parity) %>">
+                  <%= bet_parity_text(bet.bet_parity) %>
+                </span>
+              </div>
+              
+              <div class="col">
+                <div class="text-light">
+                  <%= number_with_precision(bet.bet_amount, precision: 0) %>
+                </div>
+                <div class="text-muted small-size opacity-25">TRX</div>
+              </div>
+              
+              <div class="col">
+                <% if bet.success.nil? %>
+                  <span class="badge bg-secondary-subtle text-secondary">等待中</span>
+                <% else %>
+                  <span class="badge <%= result_parity_badge_class(bet.result_parity) %>">
+                    <%= result_parity_text(bet.result_parity) %>
+                  </span>
+                <% end %>
+              </div>
+              
+              <div class="col">
+                <% if bet.success.nil? %>
+                  <span class="badge bg-warning-subtle text-warning">
+                    <i class="bi bi-clock me-1"></i>等待
+                  </span>
+                <% elsif bet.success %>
+                  <span class="badge bg-success-subtle text-success">
+                    <i class="bi bi-check-circle me-1"></i>成功
+                  </span>
+                <% else %>
+                  <span class="badge bg-danger-subtle text-danger">
+                    <i class="bi bi-x-circle me-1"></i>失败
+                  </span>
+                <% end %>
+              </div>
+              
+              <div class="col">
+                <% if bet.transaction_id.present? %>
+                  <div class="divansaction-id text-nowrap">
+                    <code class="text-light small" 
+                          data-bs-toggle="tooltip" 
+                          title="<%= bet.transaction_id %>">
+                      <%= truncate_transaction_id(bet.transaction_id) %>
+                    </code>
+                    <span class="text-muted btn-outline-secondary ms-1"
+                            data-clipboard-text="<%= bet.transaction_id %>"
+                            title="复制交易ID">
+                      <i class="bi bi-clipboard"></i>
+                    </span>
+                  </div>
+                <% else %>
+                  <span class="text-muted small">-</span>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+        
+        <% else %>
+          <div class="text-center py-5">
+            <i class="bi bi-clock-history fs-1 text-secondary mb-3"></i>
+            <p class="text-muted mb-0">暂无下注记录</p>
+          </div>
+        <% end %>
+      </div>
+      
+      <!-- 查看更多链接 -->
+      <!-- <%# if @recent_bets.count >= 20 %>
+        <div class="card-footer border-0 bg-divansparent py-2 text-center">
+          <%#= link_to "查看全部下注记录", "#", class: "btn btn-sm btn-outline-info" %>
+        </div>
+      <%# end %> -->
+    </div>
+
+
+
+  </div>

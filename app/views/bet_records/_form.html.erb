@@ -1,0 +1,17 @@
+<%= form_with(model: bet_record) do |form| %>
+  <% if bet_record.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(bet_record.errors.count, "error") %> prohibited this bet_record from being saved:</h2>
+
+      <ul>
+        <% bet_record.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>

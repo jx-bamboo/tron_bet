@@ -1,0 +1,23 @@
+<div class="container py-4">
+  <% content_for :title, "Tron wallets" %>
+
+  <div class="main-size bg-card">
+    <div class="bg-table-header">
+      <div class="row m-0 py-2">
+        <div class="col text-secondary">地址</div>
+        <div class="col text-secondary">私钥</div>
+      </div>
+    </div>
+
+    <div id="tron_wallets" class="text-light overflow-auto text-nowrap text-break">
+      <% @tron_wallets.each do |tron_wallet| %>
+        <%= render tron_wallet %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mt-5 text-center">
+    <%= link_to "创建地址", new_tron_wallet_path, class: "btn btn-outline-light px-4 py-2", data: {turbo: "false"} %>
+  </div>
+
+</div>

@@ -1,0 +1,95 @@
+<div id="<%= dom_id member %>" class="member-card card-main rounded shadow main-size p-2">
+  <!-- 头部 -->
+  <div class="member-header d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-2">
+      <div>
+        <i class="bi bi-person-circle fs-1 text-primary"></i>
+      </div>
+      <div>
+        <div class="text-light mb-1 fw-bold"><%= member.username %></div>
+        <div class="text-secondary">
+          <i class="bi bi-calendar me-1"></i>
+          创建于 <%= member.created_at.strftime('%Y-%m-%d') %>
+        </div>
+      </div>
+    </div>
+    <%= bot_status_text member.bot&.status %>
+  </div>
+  
+  <!-- 主要信息 -->
+  <div class="row g-3">
+    <!-- TRON地址 -->
+    <div class="col-12">
+      <div class="card-info">
+        <div class="card-info-label">
+          <i class="bi bi-wallet2 me-1"></i> TRON 地址
+        </div>
+        <div class="card-info-value">
+          <div class="input-group">
+            <input type="text" 
+                   class="form-control bg-dark text-light border-secondary font-monospace" 
+                   value="<%= member.tron_address %>" 
+                   readonly
+                   id="address-<%= member.id %>">
+            <button class="btn btn-outline-secondary btn-sm" 
+                    type="button"
+                    onclick="copyToClipboard('address-<%= member.id %>', this)">
+              <i class="bi bi-clipboard"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card-info">
+        <div class="card-info-label">
+          <i class="bi bi-gear me-1"></i> 私钥
+        </div>
+        <div class="card-info-value">
+          <span class="strategy-badge <%= strategy_badge_class(member.strategy) %>">
+            ********
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 策略和状态 -->
+    <div class="col-md-6">
+      <div class="card-info">
+        <div class="card-info-label">
+          <i class="bi bi-gear me-1"></i> 策略
+        </div>
+        <div class="card-info-value">
+          <span class="strategy-badge <%= strategy_badge_class(member.strategy) %>">
+            <%= get_strategy_text member.strategy %>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function copyToClipboard(elementId, button) {
+    const element = document.getElementById(elementId);
+    element.select();
+    element.setSelectionRange(0, 99999);
+    
+    navigator.clipboard.writeText(element.value).then(() => {
+      const originalHTML = button.innerHTML;
+      const originalClass = button.className;
+      
+      button.innerHTML = '<i class="bi bi-check"></i>';
+      button.className = 'btn btn-success btn-sm';
+      
+      setTimeout(() => {
+        button.innerHTML = originalHTML;
+        button.className = originalClass;
+      }, 1500);
+    }).catch(err => {
+      console.error('复制失败:', err);
+      alert('复制失败，请手动选择复制');
+    });
+  }
+</script>
