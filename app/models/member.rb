@@ -182,15 +182,13 @@ class Member < ApplicationRecord
 
   # 获取盈利趋势（按天统计，修正版）
   def daily_profit_trend(days: 30)
-    # 获取最近N天的日期范围
     end_date = Date.today
     start_date = end_date - (days - 1).days
 
-    # 按天分组计算
     daily_stats = bet_records
-      .where("DATE(bet_records.created_at) BETWEEN ? AND ?", start_date, end_date)
+      .where("bet_records.created_at BETWEEN ? AND ?",
+             start_date.beginning_of_day, end_date.end_of_day)
       .where.not(success: nil)
-      .reorder(nil)
       .group("DATE(bet_records.created_at)")
       .select(
         "DATE(bet_records.created_at) as bet_date",
@@ -202,13 +200,12 @@ class Member < ApplicationRecord
       )
       .order("bet_date")
 
-    # 转换为方便使用的格式
+    # 后续处理逻辑保持不变
     daily_stats.map do |stat|
       win_sum = stat.win_amount.to_f
       lose_sum = stat.lose_amount.to_f
       total_wagered = win_sum + lose_sum
 
-      # 修正算法：总盈利 = (赢的金额 × 1.95) - 总下注金额
       daily_profit = (win_sum * BET_MULTIPLIER) - total_wagered
 
       {
@@ -216,7 +213,7 @@ class Member < ApplicationRecord
         total_bets: stat.total_bets,
         win_bets: stat.win_bets,
         lose_bets: stat.lose_bets,
-        win_rate: stat.total_bets > 0 ? (stat.win_bets.to_f / stat.total_bets * 100).round(2) : 0,
+        win_rate: stat.total_bets.to_i > 0 ? (stat.win_bets.to_f / stat.total_bets * 100).round(2) : 0,
         total_profit: daily_profit.round(6),
         win_total_amount: win_sum,
         lose_total_amount: lose_sum,
