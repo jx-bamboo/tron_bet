@@ -154,8 +154,6 @@ class Member < ApplicationRecord
       .where("bet_records.created_at >= ? AND bet_records.created_at < ?",
              Date.today.beginning_of_day, Date.tomorrow.beginning_of_day)
       .where.not(success: nil)
-      .reorder(nil)           # 清除排序
-      .unscope(:order)        # 更彻底清除 order
 
     generate_betting_stats(today_bets)
   end
@@ -176,11 +174,7 @@ class Member < ApplicationRecord
 
   # 计算所有下注的详细统计（新规则）
   def betting_statistics
-    all_bets = bet_records
-      .where.not(success: nil)
-      .reorder(nil)
-      .unscope(:order)
-
+    all_bets = bet_records.where.not(success: nil)
     { all_time: generate_betting_stats(all_bets) }
   end
 
@@ -303,9 +297,15 @@ class Member < ApplicationRecord
   #   stats
   # end
   def generate_betting_stats(bets, include_date: false, date: nil)
-    # 最终强力修复：使用子查询 + 完全独立聚合，避免任何主表 id 泄露
+    # 强力修复：先把关联查询转为纯 SQL 子查询，避免 id 被自动带入
+    subquery = bets
+      .reorder(nil)
+      .unscope(:order)
+      .select("success", "bet_amount")
+      .to_sql
+
     stats_data = BetRecord
-      .from(bets.except(:select).reselect("id, success, bet_amount, created_at").as("sub"))
+      .from("(#{subquery}) as sub")
       .select(
         "COUNT(*) as total_bets",
         "SUM(CASE WHEN success = true THEN 1 ELSE 0 END) as win_count",
@@ -315,10 +315,10 @@ class Member < ApplicationRecord
         "COALESCE(SUM(bet_amount), 0) as total_wagered"
       ).first
 
-    # 处理无数据情况
+    # 无数据处理
     if stats_data.nil?
       stats = {
-        total_bets: 0, win_bets: 0, lose_bets: 0, win_rate: 0,
+        total_bets: 0, win_bets: 0, lose_bets: 0, win_rate: 0.0,
         total_profit: 0.0, win_total_amount: 0.0, lose_total_amount: 0.0,
         total_wagered: 0.0, total_return: 0.0, roi: 0.0,
         break_even_win_rate: BREAK_EVEN_WIN_RATE
