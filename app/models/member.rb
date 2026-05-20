@@ -151,9 +151,11 @@ class Member < ApplicationRecord
   # 计算当日下注统计详情（修正版）
   def today_betting_stats
     today_bets = bet_records
-      .where("bet_records.created_at >= ? AND bet_records.created_at < ?",
+      .where("created_at >= ? AND created_at < ?",
              Date.today.beginning_of_day, Date.tomorrow.beginning_of_day)
       .where.not(success: nil)
+      .reorder(nil)
+      .unscope(:order)
 
     generate_betting_stats(today_bets)
   end
@@ -297,26 +299,10 @@ class Member < ApplicationRecord
   #   stats
   # end
   def generate_betting_stats(bets, include_date: false, date: nil)
-    # 强力修复：先把关联查询转为纯 SQL 子查询，避免 id 被自动带入
-    subquery = bets
-      .reorder(nil)
-      .unscope(:order)
-      .select("success", "bet_amount")
-      .to_sql
+    # 使用 .pluck + Ruby 计算（最安全，避免所有 GROUP BY + id 问题）
+    records = bets.pluck(:success, :bet_amount)
 
-    stats_data = BetRecord
-      .from("(#{subquery}) as sub")
-      .select(
-        "COUNT(*) as total_bets",
-        "SUM(CASE WHEN success = true THEN 1 ELSE 0 END) as win_count",
-        "SUM(CASE WHEN success = false THEN 1 ELSE 0 END) as lose_count",
-        "COALESCE(SUM(CASE WHEN success = true THEN bet_amount ELSE 0 END), 0) as win_sum",
-        "COALESCE(SUM(CASE WHEN success = false THEN bet_amount ELSE 0 END), 0) as lose_sum",
-        "COALESCE(SUM(bet_amount), 0) as total_wagered"
-      ).first
-
-    # 无数据处理
-    if stats_data.nil?
+    if records.empty?
       stats = {
         total_bets: 0, win_bets: 0, lose_bets: 0, win_rate: 0.0,
         total_profit: 0.0, win_total_amount: 0.0, lose_total_amount: 0.0,
@@ -324,13 +310,24 @@ class Member < ApplicationRecord
         break_even_win_rate: BREAK_EVEN_WIN_RATE
       }
     else
-      total_bets = stats_data.total_bets.to_i
-      win_count = stats_data.win_count.to_i
-      lose_count = stats_data.lose_count.to_i
-      win_sum = stats_data.win_sum.to_f
-      lose_sum = stats_data.lose_sum.to_f
-      total_wagered = stats_data.total_wagered.to_f
+      win_sum = 0.0
+      lose_sum = 0.0
+      win_count = 0
+      lose_count = 0
 
+      records.each do |success, amount|
+        amount = amount.to_f
+        if success == true
+          win_sum += amount
+          win_count += 1
+        elsif success == false
+          lose_sum += amount
+          lose_count += 1
+        end
+      end
+
+      total_bets = win_count + lose_count
+      total_wagered = win_sum + lose_sum
       total_profit = (win_sum * BET_MULTIPLIER) - total_wagered
       win_rate = total_bets > 0 ? (win_count.to_f / total_bets * 100).round(2) : 0
       roi = total_wagered > 0 ? (total_profit / total_wagered * 100).round(2) : 0
