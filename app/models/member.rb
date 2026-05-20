@@ -151,11 +151,9 @@ class Member < ApplicationRecord
   # 计算当日下注统计详情（修正版）
   def today_betting_stats
     today_bets = bet_records
-      .where("created_at >= ? AND created_at < ?",
+      .where("bet_records.created_at >= ? AND bet_records.created_at < ?",
              Date.today.beginning_of_day, Date.tomorrow.beginning_of_day)
       .where.not(success: nil)
-      .reorder(nil)
-      .unscope(:order)
 
     generate_betting_stats(today_bets)
   end
@@ -186,38 +184,41 @@ class Member < ApplicationRecord
     end_date = Date.today
     start_date = end_date - (days - 1).days
 
-    daily_stats = bet_records
+    records = bet_records
       .where("bet_records.created_at >= ? AND bet_records.created_at <= ?",
              start_date.beginning_of_day, end_date.end_of_day)
       .where.not(success: nil)
-      .group("DATE(bet_records.created_at)")
-      .select(
-        "DATE(bet_records.created_at) AS bet_date",
-        "COUNT(*) AS total_bets",
-        "SUM(CASE WHEN success = true THEN 1 ELSE 0 END) AS win_bets",
-        "SUM(CASE WHEN success = false THEN 1 ELSE 0 END) AS lose_bets",
-        "SUM(CASE WHEN success = true THEN bet_amount ELSE 0 END) AS win_amount",
-        "SUM(CASE WHEN success = false THEN bet_amount ELSE 0 END) AS lose_amount",
-        "MAX(bet_records.id) AS max_id",           # 解决 id 报错
-        "MAX(bet_records.created_at) AS max_time"  # 用于排序
-      )
-      .order("bet_date DESC")   # 必须用分组后的列排序
-      .limit(days)
+      .pluck(:created_at, :success, :bet_amount)
 
-    # 转换为前端友好格式
-    daily_stats.map do |stat|
-      win_sum = stat.win_amount.to_f
-      lose_sum = stat.lose_amount.to_f
+    daily_data = records.group_by { |created_at, _, _| created_at.to_date }
+
+    (start_date..end_date).map do |date|
+      day_records = daily_data[date] || []
+
+      win_sum = lose_sum = 0.0
+      win_count = lose_count = 0
+
+      day_records.each do |_, success, amount|
+        amt = amount.to_f
+        if success == true
+          win_sum += amt
+          win_count += 1
+        elsif success == false
+          lose_sum += amt
+          lose_count += 1
+        end
+      end
+
+      total_bets = win_count + lose_count
       total_wagered = win_sum + lose_sum
-
       daily_profit = (win_sum * BET_MULTIPLIER) - total_wagered
 
       {
-        date: stat.bet_date,
-        total_bets: stat.total_bets.to_i,
-        win_bets: stat.win_bets.to_i,
-        lose_bets: stat.lose_bets.to_i,
-        win_rate: stat.total_bets > 0 ? (stat.win_bets.to_f / stat.total_bets * 100).round(2) : 0,
+        date: date,
+        total_bets: total_bets,
+        win_bets: win_count,
+        lose_bets: lose_count,
+        win_rate: total_bets > 0 ? (win_count.to_f / total_bets * 100).round(2) : 0,
         total_profit: daily_profit.round(6),
         win_total_amount: win_sum,
         lose_total_amount: lose_sum,
@@ -299,29 +300,26 @@ class Member < ApplicationRecord
   #   stats
   # end
   def generate_betting_stats(bets, include_date: false, date: nil)
-    # 使用 .pluck + Ruby 计算（最安全，避免所有 GROUP BY + id 问题）
     records = bets.pluck(:success, :bet_amount)
 
     if records.empty?
-      stats = {
+      base = {
         total_bets: 0, win_bets: 0, lose_bets: 0, win_rate: 0.0,
         total_profit: 0.0, win_total_amount: 0.0, lose_total_amount: 0.0,
         total_wagered: 0.0, total_return: 0.0, roi: 0.0,
         break_even_win_rate: BREAK_EVEN_WIN_RATE
       }
     else
-      win_sum = 0.0
-      lose_sum = 0.0
-      win_count = 0
-      lose_count = 0
+      win_sum = lose_sum = 0.0
+      win_count = lose_count = 0
 
       records.each do |success, amount|
-        amount = amount.to_f
+        amt = amount.to_f
         if success == true
-          win_sum += amount
+          win_sum += amt
           win_count += 1
         elsif success == false
-          lose_sum += amount
+          lose_sum += amt
           lose_count += 1
         end
       end
@@ -332,7 +330,7 @@ class Member < ApplicationRecord
       win_rate = total_bets > 0 ? (win_count.to_f / total_bets * 100).round(2) : 0
       roi = total_wagered > 0 ? (total_profit / total_wagered * 100).round(2) : 0
 
-      stats = {
+      base = {
         total_bets: total_bets,
         win_bets: win_count,
         lose_bets: lose_count,
@@ -348,11 +346,11 @@ class Member < ApplicationRecord
     end
 
     if include_date
-      stats[:date] = date
-      stats[:avg_bet_amount] = total_bets > 0 ? (total_wagered / total_bets).round(6) : 0
+      base[:date] = date
+      base[:avg_bet_amount] = total_bets > 0 ? (total_wagered / total_bets).round(6) : 0
     end
 
-    stats
+    base
   end
 
   # 生成详细盈利报告（修正版）
