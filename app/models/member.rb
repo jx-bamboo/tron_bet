@@ -154,7 +154,8 @@ class Member < ApplicationRecord
       .where("bet_records.created_at >= ? AND bet_records.created_at < ?",
              Date.today.beginning_of_day, Date.tomorrow.beginning_of_day)
       .where.not(success: nil)
-      .reorder(nil)                     # ← 重要
+      .reorder(nil)           # 清除排序
+      .unscope(:order)        # 更彻底清除 order
 
     generate_betting_stats(today_bets)
   end
@@ -177,7 +178,8 @@ class Member < ApplicationRecord
   def betting_statistics
     all_bets = bet_records
       .where.not(success: nil)
-      .reorder(nil)                     # ← 重要
+      .reorder(nil)
+      .unscope(:order)
 
     { all_time: generate_betting_stats(all_bets) }
   end
@@ -301,9 +303,9 @@ class Member < ApplicationRecord
   #   stats
   # end
   def generate_betting_stats(bets, include_date: false, date: nil)
-    # 关键修复：彻底清除默认 ORDER BY + 只做聚合
-    stats_data = bets
-      .reorder(nil)                    # 清除 bet_records.id 的默认排序
+    # 最终强力修复：使用子查询 + 完全独立聚合，避免任何主表 id 泄露
+    stats_data = BetRecord
+      .from(bets.except(:select).reselect("id, success, bet_amount, created_at").as("sub"))
       .select(
         "COUNT(*) as total_bets",
         "SUM(CASE WHEN success = true THEN 1 ELSE 0 END) as win_count",
@@ -313,38 +315,40 @@ class Member < ApplicationRecord
         "COALESCE(SUM(bet_amount), 0) as total_wagered"
       ).first
 
-    return {
-      total_bets: 0, win_bets: 0, lose_bets: 0,
-      win_rate: 0, total_profit: 0, win_total_amount: 0,
-      lose_total_amount: 0, total_wagered: 0,
-      total_return: 0, roi: 0,
-      break_even_win_rate: BREAK_EVEN_WIN_RATE
-    } if stats_data.nil?
+    # 处理无数据情况
+    if stats_data.nil?
+      stats = {
+        total_bets: 0, win_bets: 0, lose_bets: 0, win_rate: 0,
+        total_profit: 0.0, win_total_amount: 0.0, lose_total_amount: 0.0,
+        total_wagered: 0.0, total_return: 0.0, roi: 0.0,
+        break_even_win_rate: BREAK_EVEN_WIN_RATE
+      }
+    else
+      total_bets = stats_data.total_bets.to_i
+      win_count = stats_data.win_count.to_i
+      lose_count = stats_data.lose_count.to_i
+      win_sum = stats_data.win_sum.to_f
+      lose_sum = stats_data.lose_sum.to_f
+      total_wagered = stats_data.total_wagered.to_f
 
-    total_bets = stats_data.total_bets.to_i
-    win_count = stats_data.win_count.to_i
-    lose_count = stats_data.lose_count.to_i
-    win_sum = stats_data.win_sum.to_f
-    lose_sum = stats_data.lose_sum.to_f
-    total_wagered = stats_data.total_wagered.to_f
+      total_profit = (win_sum * BET_MULTIPLIER) - total_wagered
+      win_rate = total_bets > 0 ? (win_count.to_f / total_bets * 100).round(2) : 0
+      roi = total_wagered > 0 ? (total_profit / total_wagered * 100).round(2) : 0
 
-    total_profit = (win_sum * BET_MULTIPLIER) - total_wagered
-    win_rate = total_bets > 0 ? (win_count.to_f / total_bets * 100).round(2) : 0
-    roi = total_wagered > 0 ? (total_profit / total_wagered * 100).round(2) : 0
-
-    stats = {
-      total_bets: total_bets,
-      win_bets: win_count,
-      lose_bets: lose_count,
-      win_rate: win_rate,
-      total_profit: total_profit.round(6),
-      win_total_amount: win_sum,
-      lose_total_amount: lose_sum,
-      total_wagered: total_wagered,
-      total_return: (win_sum * BET_MULTIPLIER).round(6),
-      roi: roi,
-      break_even_win_rate: BREAK_EVEN_WIN_RATE
-    }
+      stats = {
+        total_bets: total_bets,
+        win_bets: win_count,
+        lose_bets: lose_count,
+        win_rate: win_rate,
+        total_profit: total_profit.round(6),
+        win_total_amount: win_sum,
+        lose_total_amount: lose_sum,
+        total_wagered: total_wagered,
+        total_return: (win_sum * BET_MULTIPLIER).round(6),
+        roi: roi,
+        break_even_win_rate: BREAK_EVEN_WIN_RATE
+      }
+    end
 
     if include_date
       stats[:date] = date
