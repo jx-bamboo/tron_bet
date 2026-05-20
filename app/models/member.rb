@@ -181,26 +181,30 @@ class Member < ApplicationRecord
   end
 
   # 获取盈利趋势（按天统计，修正版）
+  # 计算盈利趋势（按天统计 - PostgreSQL 安全版）
   def daily_profit_trend(days: 30)
     end_date = Date.today
     start_date = end_date - (days - 1).days
 
     daily_stats = bet_records
-      .where("bet_records.created_at BETWEEN ? AND ?",
+      .where("bet_records.created_at >= ? AND bet_records.created_at <= ?",
              start_date.beginning_of_day, end_date.end_of_day)
       .where.not(success: nil)
       .group("DATE(bet_records.created_at)")
       .select(
-        "DATE(bet_records.created_at) as bet_date",
-        "COUNT(*) as total_bets",
-        "SUM(CASE WHEN success = true THEN 1 ELSE 0 END) as win_bets",
-        "SUM(CASE WHEN success = false THEN 1 ELSE 0 END) as lose_bets",
-        "SUM(CASE WHEN success = true THEN bet_amount ELSE 0 END) as win_amount",
-        "SUM(CASE WHEN success = false THEN bet_amount ELSE 0 END) as lose_amount"
+        "DATE(bet_records.created_at) AS bet_date",
+        "COUNT(*) AS total_bets",
+        "SUM(CASE WHEN success = true THEN 1 ELSE 0 END) AS win_bets",
+        "SUM(CASE WHEN success = false THEN 1 ELSE 0 END) AS lose_bets",
+        "SUM(CASE WHEN success = true THEN bet_amount ELSE 0 END) AS win_amount",
+        "SUM(CASE WHEN success = false THEN bet_amount ELSE 0 END) AS lose_amount",
+        "MAX(bet_records.id) AS max_id",           # 解决 id 报错
+        "MAX(bet_records.created_at) AS max_time"  # 用于排序
       )
-      .order("bet_date")
+      .order("bet_date DESC")   # 必须用分组后的列排序
+      .limit(days)
 
-    # 后续处理逻辑保持不变
+    # 转换为前端友好格式
     daily_stats.map do |stat|
       win_sum = stat.win_amount.to_f
       lose_sum = stat.lose_amount.to_f
@@ -210,10 +214,10 @@ class Member < ApplicationRecord
 
       {
         date: stat.bet_date,
-        total_bets: stat.total_bets,
-        win_bets: stat.win_bets,
-        lose_bets: stat.lose_bets,
-        win_rate: stat.total_bets.to_i > 0 ? (stat.win_bets.to_f / stat.total_bets * 100).round(2) : 0,
+        total_bets: stat.total_bets.to_i,
+        win_bets: stat.win_bets.to_i,
+        lose_bets: stat.lose_bets.to_i,
+        win_rate: stat.total_bets > 0 ? (stat.win_bets.to_f / stat.total_bets * 100).round(2) : 0,
         total_profit: daily_profit.round(6),
         win_total_amount: win_sum,
         lose_total_amount: lose_sum,
