@@ -43,7 +43,7 @@ default_postgres: &default_postgres
   timeout: 5000
   host: <%= ENV.fetch("DB_HOST") { "127.0.0.1" } %>
   port: <%= ENV.fetch("DB_PORT") { 5432 } %>
-  username: radar
+  username: tron_bet
   password: <%= ENV["POSTGRES_PASSWORD"] %>
 
 production:
