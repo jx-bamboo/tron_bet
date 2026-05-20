@@ -151,8 +151,10 @@ class Member < ApplicationRecord
   # 计算当日下注统计详情（修正版）
   def today_betting_stats
     today_bets = bet_records
-      .where("DATE(bet_records.created_at) = ?", Date.today)
+      .where("bet_records.created_at >= ? AND bet_records.created_at < ?",
+             Date.today.beginning_of_day, Date.tomorrow.beginning_of_day)
       .where.not(success: nil)
+      .reorder(nil)                     # ← 重要
 
     generate_betting_stats(today_bets)
   end
@@ -173,11 +175,11 @@ class Member < ApplicationRecord
 
   # 计算所有下注的详细统计（新规则）
   def betting_statistics
-    all_bets = bet_records.where.not(success: nil)
+    all_bets = bet_records
+      .where.not(success: nil)
+      .reorder(nil)                     # ← 重要
 
-    {
-      all_time: generate_betting_stats(all_bets)
-    }
+    { all_time: generate_betting_stats(all_bets) }
   end
 
   # 获取盈利趋势（按天统计，修正版）
@@ -299,17 +301,26 @@ class Member < ApplicationRecord
   #   stats
   # end
   def generate_betting_stats(bets, include_date: false, date: nil)
-    # 使用一个 SQL 查询获取所有统计数据
-    stats_data = bets.select(
-      "COUNT(*) as total_bets",
-      "SUM(CASE WHEN success = true THEN 1 ELSE 0 END) as win_count",
-      "SUM(CASE WHEN success = false THEN 1 ELSE 0 END) as lose_count",
-      "COALESCE(SUM(CASE WHEN success = true THEN bet_amount ELSE 0 END), 0) as win_sum",
-      "COALESCE(SUM(CASE WHEN success = false THEN bet_amount ELSE 0 END), 0) as lose_sum",
-      "COALESCE(SUM(bet_amount), 0) as total_wagered"
-    ).first
+    # 关键修复：彻底清除默认 ORDER BY + 只做聚合
+    stats_data = bets
+      .reorder(nil)                    # 清除 bet_records.id 的默认排序
+      .select(
+        "COUNT(*) as total_bets",
+        "SUM(CASE WHEN success = true THEN 1 ELSE 0 END) as win_count",
+        "SUM(CASE WHEN success = false THEN 1 ELSE 0 END) as lose_count",
+        "COALESCE(SUM(CASE WHEN success = true THEN bet_amount ELSE 0 END), 0) as win_sum",
+        "COALESCE(SUM(CASE WHEN success = false THEN bet_amount ELSE 0 END), 0) as lose_sum",
+        "COALESCE(SUM(bet_amount), 0) as total_wagered"
+      ).first
 
-    # 提取数据，处理 nil 值
+    return {
+      total_bets: 0, win_bets: 0, lose_bets: 0,
+      win_rate: 0, total_profit: 0, win_total_amount: 0,
+      lose_total_amount: 0, total_wagered: 0,
+      total_return: 0, roi: 0,
+      break_even_win_rate: BREAK_EVEN_WIN_RATE
+    } if stats_data.nil?
+
     total_bets = stats_data.total_bets.to_i
     win_count = stats_data.win_count.to_i
     lose_count = stats_data.lose_count.to_i
@@ -317,7 +328,6 @@ class Member < ApplicationRecord
     lose_sum = stats_data.lose_sum.to_f
     total_wagered = stats_data.total_wagered.to_f
 
-    # 计算其他指标
     total_profit = (win_sum * BET_MULTIPLIER) - total_wagered
     win_rate = total_bets > 0 ? (win_count.to_f / total_bets * 100).round(2) : 0
     roi = total_wagered > 0 ? (total_profit / total_wagered * 100).round(2) : 0
