@@ -58,7 +58,7 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "example.com" }
+  config.action_mailer.default_url_options = { host: "hashgame.lat" }
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
   # config.action_mailer.smtp_settings = {
@@ -87,4 +87,21 @@ Rails.application.configure do
   #
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+
+  # 使用 SMTP 发送邮件
+  config.action_mailer.delivery_method = :smtp
+
+  # SMTP 服务器配置（以 Gmail 为例，实际请换成你自己的邮件服务商）
+  config.action_mailer.smtp_settings = {
+    address:              'smtp.gmail.com',   # 例: smtp.gmail.com
+    port:                 587,
+    domain:               'gmail.com',          # 你应用的域名
+    user_name:            'noreply@gmail.com',   # 发件邮箱账号
+    password:              'your-password-or-app-key',# 密码或授权码
+    authentication:       'plain',
+    enable_starttls_auto: true
+  }
+
+  # 如果你暂时不需要发送邮件（例如只是测试，不要求邮件确认），可以临时禁用发送
+  # config.action_mailer.perform_deliveries = false
 end
