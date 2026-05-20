@@ -190,6 +190,7 @@ class Member < ApplicationRecord
     daily_stats = bet_records
       .where("DATE(bet_records.created_at) BETWEEN ? AND ?", start_date, end_date)
       .where.not(success: nil)
+      .reorder(nil)
       .group("DATE(bet_records.created_at)")
       .select(
         "DATE(bet_records.created_at) as bet_date",
