@@ -20,7 +20,7 @@ class Bot < ApplicationRecord
   def check_for_new_bet
     # 新增：检查是否有未结算的下注
     if bet_records.where(success: nil).exists?
-      p ".... 机器人 #{id} 还有未结算的下注，跳过新下单 ...."
+      puts ".... 机器人 #{id} 还有未结算的下注，跳过新下单 ...."
       return false
     end
 

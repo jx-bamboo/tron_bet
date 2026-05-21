@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_18_042110) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_21_061345) do
   create_table "admins", force: :cascade do |t|
     t.datetime "confirmation_sent_at"
     t.string "confirmation_token"
@@ -100,6 +100,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_18_042110) do
     t.string "tron_private_key", null: false
     t.datetime "updated_at", null: false
     t.string "username", null: false
+  end
+
+  create_table "monitor_locks", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "solid_queue_blocked_executions", force: :cascade do |t|

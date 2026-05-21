@@ -1,0 +1,2 @@
+class MonitorLock < ApplicationRecord
+end

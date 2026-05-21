@@ -17,12 +17,12 @@ production:
   tron_block_monitor:
     class: TronBlockMonitorJob
     queue: default
-    description: "每10秒拉取TRON最新区块并记录分钟数据"
-    schedule: every 10 seconds
+    description: "每15秒拉取TRON最新区块并记录分钟数据"
+    schedule: every 15 seconds
 
 development:
   tron_block_monitor:
     class: TronBlockMonitorJob
     queue: default
-    description: "每10秒拉取TRON最新区块并记录分钟数据"
-    schedule: every 10 seconds
+    description: "每15秒拉取TRON最新区块并记录分钟数据"
+    schedule: every 15 seconds
