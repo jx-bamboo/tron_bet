@@ -1,149 +1,9 @@
-# require "paint"
-# class TronBlockMonitorJob < ApplicationJob
-#   queue_as :default
-#   # 类变量，记录上一次成功存储的整点区块号
-#   # Rails 在多进程/多线程下会独立，所以开发时没问题
-#   # 生产部署（如使用 Puma clustered 或多个 worker）建议用 Redis 存
-#   @@last_stored_number = nil
-
-#   # 配置参数
-#   INITIAL_BACKFILL_COUNT = 5  # 首次启动或断档时回溯的整点区块数量
-#   MINIMUM_TIME_FOR_TRANSFER = 20  # 机器人策略执行所需的最短时间（秒）
-
-#   def perform
-#     latest_block = fetch_latest_block
-#     return unless latest_block
-
-#     latest_num = latest_block["block_header"]["raw_data"]["number"]
-#     puts ".... New 【#{latest_num}】 .... fetch 【#{Time.now}】 ...."
-
-#     # 计算当前已产生的最近一个整点区块（能被20整除）
-#     current_target = (latest_num / 20) * 20
-
-
-#       # 首次运行或有新的整点区块需要存储
-#       if @@last_stored_number.nil? || current_target > @@last_stored_number
-#         # 可能跳跃了多个（比如宕机很久），但我们只存最新的那个（保证连续）
-#         # 如果你想补齐中间所有缺失的，可以改成循环，这里先按“只存最新”处理
-#         target_num = current_target
-
-#         if BlockRecord.exists?(number: target_num)
-#           Rails.logger.info "区块 #{target_num} 已存在，跳过"
-#         else
-#           block_data = fetch_block_by_number(target_num)
-#           if block_data && save_block_record(block_data)
-#             @@last_stored_number = target_num
-#             puts Paint[".... Save 【#{target_num}】 .... Time 【#{Time.now}】 ....", :green]
-
-#             ######################### 触发机器人监控 #######################
-#             trigger_bot_monitoring
-#             ######################### 触发机器人监控 #######################
-
-#           end
-#         end
-#       else
-#         Rails.logger.info "尚无新的整点区块（等待下一个）"
-#       end
-#     rescue StandardError => e
-#       Rails.logger.error "TronMinuteBlockMonitorJob 出错: #{e.message}"
-#       raise # 让 Solid Queue 重试
-#   end
-
-#   private
-
-#   # 获取最新区块（使用你原来的 getnowblock 接口）
-#   def fetch_latest_block
-#     uri = URI("https://api.trongrid.io/wallet/getnowblock")
-#     response = Net::HTTP.get_response(uri)
-#     return unless response.is_a?(Net::HTTPSuccess)
-
-#     JSON.parse(response.body)
-#   end
-
-#   # 根据区块号获取完整区块数据（你提供的代码封装）
-#   def fetch_block_by_number(num)
-#     url = URI("https://api.trongrid.io/wallet/getblockbynum")
-#     http = Net::HTTP.new(url.host, url.port)
-#     http.use_ssl = true
-
-#     request = Net::HTTP::Post.new(url)
-#     request["accept"] = "application/json"
-#     request["content-type"] = "application/json"
-#     request["TRON-PRO-API-KEY"] = Rails.application.credentials.dig(:tron_grid_api_key)
-#     request.body = { num: num }.to_json
-
-#     response = http.request(request)
-#     return unless response.is_a?(Net::HTTPSuccess)
-
-#     JSON.parse(response.body)
-#   rescue => e
-#     p "获取区块 #{num} 失败: #{e.message}"
-#     nil
-#   end
-
-#   # 保存到数据库
-#   def save_block_record(block_data)
-#     raw = block_data["block_header"]["raw_data"]
-#     block_id = block_data["blockID"]
-#     timestamp_ms = raw["timestamp"]
-
-#     block_time = Time.at(timestamp_ms / 1000.0).utc
-
-#     last_digit = block_id.reverse[/\d/] || "0"
-#     parity = last_digit.to_i.odd? ? 1 : 0
-
-#     BlockRecord.create!(
-#       number:      raw["number"],
-#       block_hash:  block_id,
-#       last_digit:  last_digit,
-#       parity:      parity,
-#       block_time:  block_time
-#     )
-#     true
-#   rescue ActiveRecord::RecordInvalid => e
-#     p "Failed to save block record: #{e.message}"
-#     false
-#   end
-
-#   def enough_time(block_time)
-#     now = Time.current
-#     time_diff_seconds = (now - block_time).to_i
-
-#     if time_diff_seconds >= 20
-#       puts Paint[".... #{time_diff_seconds} seconds passed since block #{block_time} ....", :yellow]
-#       true
-#     else
-#       puts Paint[".... #{time_diff_seconds} seconds passed since block #{block_time} ....", :red]
-#       false
-#     end
-#   end
-
-#   def trigger_bot_monitoring
-#     # 获取最新的区块记录
-#     latest_block = BlockRecord.last
-#     return unless latest_block
-
-#     # 获取所有活跃的机器人
-#     active_bots = Bot.where(status: [ :running, :waiting_result ])
-#     puts Paint[".... #{active_bots.count} active robots ....", :blue]
-#     return unless active_bots.any?
-
-#     active_bots.each do |bot|
-#       begin
-#         bot.process_new_block(latest_block)
-#       rescue => e
-#         puts Paint["Robot #{bot.id} encountered an error while processing a new block: #{e.message}", :red]
-#       end
-#     end
-#   end
-# end
-
 require "paint"
 class TronBlockMonitorJob < ApplicationJob
   queue_as :default
 
   # 配置参数
-  INITIAL_BACKFILL_COUNT = 5  # 首次启动或断档时回溯的整点区块数量
+  INITIAL_BACKFILL_COUNT = 10  # 首次启动或断档时回溯的整点区块数量
   MINIMUM_TIME_FOR_TRANSFER = 20  # 机器人策略执行所需的最短时间（秒）
 
   def perform
@@ -151,81 +11,101 @@ class TronBlockMonitorJob < ApplicationJob
     return unless latest_block
 
     latest_num = latest_block["block_header"]["raw_data"]["number"]
-
     # 只处理整点区块（能被20整除）
     current_target = (latest_num / 20) * 20
-    puts Paint[".... New 【#{latest_num}】 .... Fetch 【#{Time.now}】 ....", :gray]
-
+    puts Paint[".... New 【#{latest_num}】 → Target 【#{current_target}】 .... Fetch 【#{Time.now}】 ....", :gray]
     # 从数据库获取最后一个已处理的整点区块
     last_processed = BlockRecord.maximum(:number).to_i || 0
 
     if last_processed == 0
       # 首次运行：保存最近5个整点区块
       handle_first_run(current_target)
-    else
+    elsif current_target > last_processed
       # 非首次运行
-      handle_normal_run(current_target, last_processed)
+      process_new_target(current_target, last_processed)
+      # handle_normal_run(current_target, last_processed)
+    else
+      Rails.logger.info ".... 尚无新的整点区块（等待下一个） ...."
     end
   end
 
   def handle_first_run(current_target)
     puts Paint[".... 系统首次启动，开始回溯 #{INITIAL_BACKFILL_COUNT} 个整点区块 ....", :yellow]
-
     # 计算起始区块号（当前整点区块向前推4个，加上当前共5个）
     start_num = [ current_target - ((INITIAL_BACKFILL_COUNT - 1) * 20), 20 ].max
-
-    # 保存前4个历史区块，不触发机器人策略
+    # 保存前n-1个历史区块，不触发机器人策略
     (start_num...(current_target)).step(20) do |block_number|
       save_block_quietly(block_number)
     end
-
     # 保存最新的区块，并触发机器人策略
     save_block_and_trigger(current_target)
   end
 
-  def handle_normal_run(current_target, last_processed)
-    if current_target > last_processed
-      # 计算缺失的整点区块数量
-      missing_blocks = (current_target - last_processed) / 20
+  def process_new_target(current_target, last_processed)
+    missing_count = (current_target - last_processed) / 20
 
-      if missing_blocks == 1
-        # 正常运行：只处理下一个整点区块
-        next_target = last_processed + 20
-        save_block_and_trigger(next_target)
-
-      elsif missing_blocks <= INITIAL_BACKFILL_COUNT
-        puts Paint[".... 短暂断档，缺失 #{missing_blocks} 个整点区块 ....", :yellow]
-
-        # 保存前N-1个历史整点区块，不触发机器人策略
-        (last_processed + 20...current_target).step(20) do |block_number|
-          save_block_quietly(block_number)
-        end
-
-        # 保存最新的整点区块，并触发机器人策略
-        save_block_and_trigger(current_target)
-
-      else
-        puts Paint[".... 长时间断档，缺失 #{missing_blocks} 个整点区块，补齐最近 #{INITIAL_BACKFILL_COUNT} 个 ....", :yellow]
-
-        # 保存前4个历史整点区块，不触发机器人策略
-        start_num = current_target - ((INITIAL_BACKFILL_COUNT - 1) * 20)
-        (start_num...(current_target)).step(20) do |block_number|
-          save_block_quietly(block_number)
-        end
-
-        # 保存最新的整点区块，并触发机器人策略
-        save_block_and_trigger(current_target)
-      end
+    if missing_count == 1
+      # 正常推进
+      save_block_and_trigger(current_target)
     else
-      Rails.logger.info "尚无新的整点区块（等待下一个）"
+      # 有跳跃（之前失败或断档）
+      puts Paint[".... 检测到跳跃 #{missing_count} 个整点，从 #{last_processed} → #{current_target} ....", :yellow]
+      # 只补最近几个历史 + 当前最新（避免补太多）
+      start_num = current_target - (missing_count - 1) * 20
+      (start_num...current_target).step(20) do |num|
+        save_block_quietly(num)
+      end
+      save_block_and_trigger(current_target)
     end
   end
+
+  # def handle_normal_run(current_target, last_processed)
+  #   if current_target > last_processed
+  #     # 计算缺失的整点区块数量
+  #     missing_blocks = (current_target - last_processed) / 20
+
+  #     if missing_blocks == 1
+  #       # 正常运行：只处理下一个整点区块
+  #       next_target = last_processed + 20
+  #       save_block_and_trigger(next_target)
+
+  #     elsif missing_blocks <= INITIAL_BACKFILL_COUNT
+  #       puts Paint[".... 短暂断档，缺失 #{missing_blocks} 个整点区块 ....", :yellow]
+
+  #       # 保存前N-1个历史整点区块，不触发机器人策略
+  #       (last_processed + 20...current_target).step(20) do |block_number|
+  #         save_block_quietly(block_number)
+  #       end
+
+  #       # 保存最新的整点区块，并触发机器人策略
+  #       save_block_and_trigger(current_target)
+
+  #     else
+  #       puts Paint[".... 长时间断档，缺失 #{missing_blocks} 个整点区块，补齐最近 #{INITIAL_BACKFILL_COUNT} 个 ....", :yellow]
+
+  #       # 保存前4个历史整点区块，不触发机器人策略
+  #       start_num = current_target - ((INITIAL_BACKFILL_COUNT - 1) * 20)
+  #       (start_num...(current_target)).step(20) do |block_number|
+  #         save_block_quietly(block_number)
+  #       end
+
+  #       # 保存最新的整点区块，并触发机器人策略
+  #       save_block_and_trigger(current_target)
+  #     end
+  #   else
+  #     Rails.logger.info ".... 尚无新的整点区块（等待下一个） ...."
+  #   end
+  # end
 
   # 安静保存区块，不触发机器人策略
   def save_block_quietly(block_number)
     return if BlockRecord.exists?(number: block_number)
-
     block_data = fetch_block_by_number(block_number)
+    # 最多做一次备用尝试
+    if block_data.nil?
+      sleep 0.7
+      block_data = fetch_block_by_number(block_number)
+    end
 
     if block_data
       save_block_record(block_data)
@@ -236,9 +116,14 @@ class TronBlockMonitorJob < ApplicationJob
   # 保存区块并触发机器人策略（有时间判断）
   def save_block_and_trigger(block_number)
     return if BlockRecord.exists?(number: block_number)
+    puts Paint[".... Try save 【#{block_number}】 ....", :yellow]
 
     block_data = fetch_block_by_number(block_number)
-
+    # 最多做一次备用尝试（符合你“尽量一次成功”的要求）
+    if block_data.nil?
+      sleep 0.8
+      block_data = fetch_block_by_number(block_number)
+    end
     return unless block_data
 
     # 保存区块记录
@@ -246,7 +131,6 @@ class TronBlockMonitorJob < ApplicationJob
     return unless block_record
 
     puts Paint[".... Save 【#{block_number}】 .... Time 【#{Time.now}】 ....", :green]
-
 
     # 判断时间是否足够执行机器人策略
     if enough_time_for_transfer?(block_record.block_time)
@@ -282,10 +166,7 @@ class TronBlockMonitorJob < ApplicationJob
 
     active_bots = Bot.where(status: [ :running, :waiting_result ])
     return unless active_bots.any?
-
-    Rails.logger.info ".... 触发 #{active_bots.count} 个活跃机器人监控，区块 #{latest_block.number} ...."
-    puts Paint[".... #{active_bots.count} active robots ....", :blue]
-
+    puts Paint[".... #{active_bots.count} active robots, 【#{latest_block.number}】 ....", :blue]
 
     active_bots.each do |bot|
       begin
@@ -300,11 +181,9 @@ class TronBlockMonitorJob < ApplicationJob
     uri = URI("https://api.trongrid.io/wallet/getnowblock")
     response = Net::HTTP.get_response(uri)
     return unless response.is_a?(Net::HTTPSuccess)
-
     JSON.parse(response.body)
   rescue => e
-    Rails.logger.error "获取最新区块失败: #{e.message}"
-    p ".... 获取最新区块失败: #{e.message} ...."
+    Rails.logger.error ".... 获取最新区块失败: #{e.message} ...."
     nil
   end
 
@@ -321,11 +200,9 @@ class TronBlockMonitorJob < ApplicationJob
 
     response = http.request(request)
     return unless response.is_a?(Net::HTTPSuccess)
-
     JSON.parse(response.body)
   rescue => e
-    Rails.logger.error "获取区块 #{num} 失败: #{e.message}"
-    p ".... 获取区块 #{num} 失败: #{e.message} ...."
+    Rails.logger.error ".... 获取区块 #{num} 失败: #{e.message} ...."
     nil
   end
 
@@ -346,7 +223,7 @@ class TronBlockMonitorJob < ApplicationJob
       block_time:  block_time
     )
   rescue ActiveRecord::RecordInvalid => e
-    Rails.logger.error "保存区块记录失败: #{e.message}"
+    Rails.logger.error ".... 保存区块记录失败: #{e.message} ...."
     nil
   end
 end
