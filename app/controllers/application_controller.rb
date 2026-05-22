@@ -13,7 +13,8 @@ class ApplicationController < ActionController::Base
     # 直接复制你的原始代码，稍作封装
     trongrid_api_key = Rails.application.credentials.dig(:tron_grid_api_key)
     tronscan_api_key = Rails.application.credentials.dig(:tron_scan_api_key)
-    to_address = Rails.env.production? ? "TAMy8fj8ViqUjt6MZjtRaXDLLZubAsa47h" : "TDKHLgVPgmJmEBaDqmbELhfoYmcLBTukER"
+    # to_address = Rails.env.production? ? "TAMy8fj8ViqUjt6MZjtRaXDLLZubAsa47h" : "TDKHLgVPgmJmEBaDqmbELhfoYmcLBTukER"
+    to_address = Rails.env.production? ? "TQrbuZYSeRMWiX9TbEy7C1SWX5bAQqrywc" : "TDKHLgVPgmJmEBaDqmbELhfoYmcLBTukER"
 
     key = Tron::Key.new(priv:)
     address = key.address
