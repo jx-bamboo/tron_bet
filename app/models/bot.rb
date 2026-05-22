@@ -5,8 +5,10 @@ class Bot < ApplicationRecord
   enum :status, [ :stopped, :running, :waiting_result, :paused ]
   enum :current_parity, [ :double, :single ]
 
-  DOUBLE_AMOUNTS = [ 6, 12, 24, 50, 106, 230, 486, 1102, 2352, 4902 ].freeze
-  SINGLE_AMOUNTS = [ 5, 11, 23, 49, 105, 229, 485, 1101, 2351, 4901 ].freeze
+  # DOUBLE_AMOUNTS = [ 6, 12, 24, 50, 106, 230, 486, 1102, 2352, 4902 ].freeze
+  # SINGLE_AMOUNTS = [ 5, 11, 23, 49, 105, 229, 485, 1101, 2351, 4901 ].freeze
+  DOUBLE_AMOUNTS = [ 10, 20, 44, 98, 206, 456, 960, 1998 ].freeze
+  SINGLE_AMOUNTS = [ 11, 21, 47, 101, 213, 475, 981, 2021 ].freeze
 
   # 处理新的区块记录（由 BlockMonitorJob 调用）
   def process_new_block(latest_block)
@@ -69,8 +71,8 @@ class Bot < ApplicationRecord
       new_failed_times = failed_times + 1
       update!(failed_times: new_failed_times)
 
-      # 检查是否达到止损
-      if new_failed_times > 9
+      # 检查是否达到止损，根据命数决定，如果10条命，那么 > 9
+      if new_failed_times > 7
         update!(status: :paused)
         last_bet.update!(note: "Consecutive bet losses reached stop-loss limit")
         puts Paint[".... Bot#{id} | 【#{member.username}】 | Loss streak: #{new_failed_times}", :red]

@@ -45,7 +45,7 @@ class TronBlockMonitorJob < ApplicationJob
 
   # ====================== 首次运行 ======================
   def handle_first_run(current_target)
-    puts Paint[".... 系统首次启动，开始回溯 #{INITIAL_BACKFILL_COUNT} 个区块 ....", :yellow]
+    puts Paint[".... First startup，Synchronize #{INITIAL_BACKFILL_COUNT} blocks ....", :yellow]
     # 计算起始区块号（当前整点区块向前推4个，加上当前共5个）
     start_num = [current_target - (INITIAL_BACKFILL_COUNT - 1) * 20, 20].max
     # 保存前n-1个历史区块，不触发机器人策略
@@ -64,7 +64,7 @@ class TronBlockMonitorJob < ApplicationJob
     if missing_blocks == 1
       save_block_and_trigger(current_target)
     else
-      puts Paint[".... 检测到跳跃 #{missing_blocks} 个区块， #{last_processed} → #{current_target} ....", :yellow]
+      puts Paint[".... #{missing_blocks} blocks lost， #{last_processed} → #{current_target} ....", :yellow]
 
       backfill_count = [missing_blocks, INITIAL_BACKFILL_COUNT].min
       start_num = current_target - (backfill_count - 1) * 20

@@ -7,8 +7,7 @@ class ApplicationController < ActionController::Base
   # include Pagy::Method
   # 直接封装官方示例的下注转账TRX方法
   def bet_transfer_trx(priv, amount)
-    puts ".... 链上转账 - 金额： #{amount} TRX ...."
-
+    # puts ".... 链上转账 - 金额： #{amount} TRX ...."
 
     return false unless priv && amount
     # 直接复制你的原始代码，稍作封装
