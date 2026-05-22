@@ -365,7 +365,24 @@ class Bot < ApplicationRecord
     when "zl4"
       4
     when "zl5_8"
-      5
+      case failed_times
+      when 0
+        5
+      when 1
+        6
+      when 2
+        7
+      when 3
+        8
+      when 4
+        5
+      when 5
+        6
+      when 6
+        7
+      when 7
+        8
+      end
     end
   end
 end
