@@ -41,6 +41,8 @@ class ApplicationController < ActionController::Base
     signature = key.sign(tx_hash)
     transaction["signature"] = [ signature ]
 
+    sleep 0.5
+
     result = Tron::Utils::HTTP.post(
       "#{client.configuration.base_url}/wallet/broadcasttransaction",
       transaction
