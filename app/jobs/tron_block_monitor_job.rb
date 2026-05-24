@@ -93,7 +93,7 @@ class TronBlockMonitorJob < ApplicationJob
 
     if block_data
       save_block_record(block_data)
-      puts Paint[".... 【Old】 Save 【#{block_number}】 .... Time 【#{Time.now}】 ....", :blue]
+      Rails.logger.info ".... 【Old】 Save 【#{block_number}】 .... Time 【#{Time.now}】 ...."
     end
   end
 
@@ -114,7 +114,8 @@ class TronBlockMonitorJob < ApplicationJob
     block_record = save_block_record(block_data)
     return unless block_record
 
-    puts Paint[".... Save 【#{block_number}】 .... Time 【#{Time.now}】 ....", :green]
+    # puts Paint[".... Save 【#{block_number}】 .... Time 【#{Time.now}】 ....", :green]
+    # Rails.logger.info ".... Save 【#{block_number}】 .... Time 【#{Time.now}】 .... Parity #{block_record.parity} ...."
 
     # 判断时间是否足够执行机器人策略
     if enough_time_for_transfer?(block_record.block_time)
@@ -193,7 +194,7 @@ class TronBlockMonitorJob < ApplicationJob
     request = Net::HTTP::Post.new(url)
     request["accept"] = "application/json"
     request["content-type"] = "application/json"
-    request["TRON-PRO-API-KEY"] = Rails.application.credentials.dig(:tron_grid_api_key)
+    request["TRON-PRO-API-KEY"] = Rails.application.credentials.dig(:trongrid_api_key_block)
     request.body = { num: num }.to_json
 
     response = http.request(request)

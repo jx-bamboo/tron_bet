@@ -14,5 +14,23 @@ development:
 test:
   <<: *default
 
+# production:
+#   <<: *default
+
 production:
-  <<: *default
+  dispatchers:
+    - polling_interval: 2
+      batch_size: 200
+
+  workers:
+    # 默认队列（区块监控等）
+    - queues: default
+      threads: 4
+      processes: 1
+      polling_interval: 0.3
+
+    # Tron 转账专用队列 —— 严格控制并发
+    - queues: tron_transfers
+      threads: 8 # 生产关键：限制为8，保护15 QPS
+      processes: 1
+      polling_interval: 0.3

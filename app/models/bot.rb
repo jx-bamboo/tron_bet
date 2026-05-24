@@ -35,7 +35,7 @@ class Bot < ApplicationRecord
       return false
     end
 
-    puts Paint[".... Bot#{id} | Strategy: #{get_strategy_text_log} | Current Streak: #{calculate_current_streak_length(recent_records.map(&:parity))} ....", :blue]
+    # puts Paint[".... Bot#{id} | Strategy: #{get_strategy_text_log} | Current Streak: #{calculate_current_streak_length(recent_records.map(&:parity))} ....", :blue]
     analyze_and_process(recent_records, check_count) # 分析连续情况
   end
 
@@ -75,9 +75,9 @@ class Bot < ApplicationRecord
       if new_failed_times > 7
         update!(status: :paused)
         last_bet.update!(note: "Consecutive bet losses reached stop-loss limit")
-        puts Paint[".... Bot#{id} | 【#{member.username}】 | Loss streak: #{new_failed_times}", :red]
+        puts Paint[".... Bot#{id} | 【#{member.username}】 | Loss failed: #{new_failed_times}", :red]
       end
-      puts Paint[".... 🧨 【#{member.username}】 Loss streak: #{new_failed_times} ....", :red]
+      puts Paint[".... 🧨 【#{member.username}】 Loss failed: #{new_failed_times} ....", :red]
       false
     end
   end
@@ -172,7 +172,7 @@ class Bot < ApplicationRecord
     return false if recent_records.length < check_count
 
     # 统一取最近的 parity 数组（从旧到新）
-    parities = recent_records.map(&:parity)
+    parities = recent_records.map(&:parity) # 获取最近的2个结果是否相同（0,0）
     current_streak = calculate_current_streak_length(parities)
 
     # ================== zl5_8 特殊逻辑 ==================
@@ -233,41 +233,69 @@ class Bot < ApplicationRecord
   # end
 
   # 执行下注, streak_parity 当前连续出现的单双结果，
+  # def execute_bet(block_record, streak_parity)
+  #   bet_parity = streak_parity == 1 ? 0 : 1  # 反向下注； 1是单，0是双； bet_parity就是要下注的方向
+
+  #   bet_amount = calculate_bet_amount(bet_parity) # 计算下注金额，这里需要添加失败计算次数
+
+  #   # 创建下注记录
+  #   bet_record = bet_records.create!(
+  #     block_record: block_record,
+  #     bet_parity: bet_parity, # 下注方向
+  #     bet_amount: bet_amount, # 下注金额
+  #     status: :pending
+  #   )
+
+  #   puts Paint[".... Bot##{id} | Strategy: #{get_strategy_text_log} | Bet: #{bet_amount}TRX | Side: #{bet_record.bet_parity_text} ....", :cyan]
+
+  #   # 执行转账
+  #   if transfer_trx(bet_amount, bet_record)
+  #     # 进入等待结果状态
+  #     update!(
+  #       status: :waiting_result,
+  #       current_parity: streak_parity, # 当前的连续结果，不是下注结果
+  #       bet_amount_index: bet_amount
+  #     )
+
+  #     puts Paint[".... 💸💸💸 【#{member.username}】 Bet placed 💸💸💸 ....", :green]
+  #     true
+  #   else
+  #     # 转账失败
+  #     # bet_record.update!(
+  #     #   success: false,
+  #     #   note: "转账失败",
+  #     #   status: :failed
+
+  #     # )
+  #     puts ".... 下注执行失败 - 下注ID: #{bet_record.id} ...."
+  #     false
+  #   end
+  # end
+
+  # execute_bet 方法重构
+  # streak_parity 出现的长龙方向
   def execute_bet(block_record, streak_parity)
-    bet_parity = streak_parity == 1 ? 0 : 1  # 反向下注； 1是单，0是双； bet_parity就是要下注的方向
+    bet_parity = streak_parity == 1 ? 0 : 1
+    bet_amount = calculate_bet_amount(bet_parity)
 
-    bet_amount = calculate_bet_amount(bet_parity) # 计算下注金额，这里需要添加失败计算次数
 
-    # 创建下注记录
-    bet_record = bet_records.create!(
-      block_record: block_record,
-      bet_parity: bet_parity, # 下注方向
-      bet_amount: bet_amount, # 下注金额
-      status: :pending
-    )
+    return false if bet_amount.nil?
 
-    puts Paint[".... Bot##{id} | Strategy: #{get_strategy_text_log} | Bet: #{bet_amount}TRX | Side: #{bet_record.bet_parity_text} ....", :cyan]
+    puts Paint[".... Bot##{id} | Strategy: #{get_strategy_text_log} | Bet: #{bet_amount}TRX | Side: #{bet_parity} ....", :cyan]
 
-    # 执行转账
-    if transfer_trx(bet_amount, bet_record)
-      # 进入等待结果状态
+    # 直接入队，不在这里创建 BetRecord
+    success = transfer_trx(bet_amount, block_record.id, bet_parity)
+
+    if success
       update!(
         status: :waiting_result,
-        current_parity: streak_parity, # 当前的连续结果，不是下注结果
+        current_parity: streak_parity,
         bet_amount_index: bet_amount
       )
-
-      puts Paint[".... 💸💸💸 【#{member.username}】 Bet placed 💸💸💸 ....", :green]
+      puts Paint[".... 💸💸💸 【#{member.username}】 下注已提交 💸💸💸 ....", :green]
       true
     else
-      # 转账失败
-      # bet_record.update!(
-      #   success: false,
-      #   note: "转账失败",
-      #   status: :failed
-
-      # )
-      p ".... 下注执行失败 - 下注ID: #{bet_record.id} ...."
+      puts Paint[".... ❌ 下注任务入队失败 ....", :red]
       false
     end
   end
@@ -275,7 +303,7 @@ class Bot < ApplicationRecord
   # 计算下注金额 - 这是核心逻辑
   # bet_parity 就是要下注的方向，金额找相对应的方向数组（以第一个数组元素为基准）
   def calculate_bet_amount(bet_parity)
-    return nil if failed_times < 0 || failed_times > 9
+    return nil if failed_times < 0 || failed_times > 7
     bet_parity == 1 ? SINGLE_AMOUNTS[failed_times] : DOUBLE_AMOUNTS[failed_times]
   end
 
@@ -291,40 +319,53 @@ class Bot < ApplicationRecord
   end
 
   # 转账方法 - 调用您在ApplicationController中封装的方法
-  def transfer_trx(amount, bet_record)
-    # 这里调用您在ApplicationController中封装的方法
-    result = ApplicationController.new.bet_transfer_trx(member.tron_private_key, amount)
+  # def transfer_trx(amount, bet_record)
+  #   # 这里调用您在ApplicationController中封装的方法
+  #   result = ApplicationController.new.bet_transfer_trx(member.tron_private_key, amount)
 
-    if result[:success]
-      bet_record.update!(transaction_id: result[:transaction_id], status: :completed)
+  #   if result[:success]
+  #     bet_record.update!(transaction_id: result[:transaction_id], status: :completed)
 
-      # 记录交易日志
-      # member.transaction_logs.create!(
-      #   transaction_type: "bet",
-      #   amount: amount,
-      #   transaction_hash: result[:transaction_id],
-      #   status: "success",
-      #   block_record: bet_record.block_record,
-      #   raw_data: result
-      # )
+  #     # 记录交易日志
+  #     # member.transaction_logs.create!(
+  #     #   transaction_type: "bet",
+  #     #   amount: amount,
+  #     #   transaction_hash: result[:transaction_id],
+  #     #   status: "success",
+  #     #   block_record: bet_record.block_record,
+  #     #   raw_data: result
+  #     # )
 
-      true
-    else
-      p ".... 转账失败 - 机器人: #{id}, 金额: #{amount} TRX, 错误: #{result[:error] || '未知错误'} ...."
-      bet_record.update!(transaction_id: result[:error], status: "failed")
-      # 记录失败的交易日志
-      # member.transaction_logs.create!(
-      #   transaction_type: "bet",
-      #   amount: amount,
-      #   status: "failed",
-      #   block_record: bet_record.block_record,
-      #   raw_data: { error: result[:error] }
-      # )
-      bet_record.destroy!
+  #     true
+  #   else
+  #     p ".... 转账失败 - 机器人: #{id}, 金额: #{amount} TRX, 错误: #{result[:error] || '未知错误'} ...."
+  #     bet_record.update!(transaction_id: result[:error], status: "failed")
+  #     # 记录失败的交易日志
+  #     # member.transaction_logs.create!(
+  #     #   transaction_type: "bet",
+  #     #   amount: amount,
+  #     #   status: "failed",
+  #     #   block_record: bet_record.block_record,
+  #     #   raw_data: { error: result[:error] }
+  #     # )
+  #     bet_record.destroy!
 
 
-      false
-    end
+  #     false
+  #   end
+  # end
+  def transfer_trx(amount, block_record_id, bet_parity)
+    TronTransferJob.perform_later(
+      self.id,
+      amount,
+      block_record_id,
+      bet_parity
+    )
+    true
+  rescue => e
+    Rails.logger.error ".... #{id}] 转账 Job 入队失败: #{e.message} ...."
+    puts ".... #{id}] 转账 Job 入队失败: #{e.message} ...."
+    false
   end
 
   # 辅助方法：获取状态文本
