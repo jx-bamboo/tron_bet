@@ -39,7 +39,6 @@ test:
 default_postgres: &default_postgres
   adapter: postgresql
   encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   timeout: 5000
   host: <%= ENV.fetch("DB_HOST") { "127.0.0.1" } %>
   port: <%= ENV.fetch("DB_PORT") { 5432 } %>
@@ -50,6 +49,7 @@ production:
   primary: &primary_production
     <<: *default_postgres
     database: storage/tron_bet_production
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
   cable:
     <<: *primary_production
@@ -60,8 +60,10 @@ production:
     <<: *primary_production
     database: storage/tron_bet_production_queue
     migrations_paths: db/queue_migrate
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 25 } %>
 
   cache:
     <<: *primary_production
     database: storage/tron_bet_production_cache
     migrations_paths: db/cache_migrate
+    pool: 10
