@@ -84,14 +84,14 @@
                 } %>
           <% else %>
             <% if @member.bot.status == "paused" %>
-              <%= link_to "重启机器人",
+              <%= link_to "已经暂停，重启机器人",
                 reboot_bot_member_path(@member),
                 class: "btn btn-warning flex-grow-1",
                 data: {
                   turbo_method: :post,
                   turbo_confirm: "确定要重启「#{@member.username}」的机器人吗？"
                 } %>
-            <% else %>
+            <% end %>
               <%= link_to "启动机器人",
                   start_bot_member_path(@member),
                   class: "btn btn-success flex-grow-1",
@@ -99,7 +99,6 @@
                     turbo_method: :post,
                     turbo_confirm: "确定要启动「#{@member.username}」的机器人吗？"
                   } %>
-              <% end %>
             <% end %>
 
 
