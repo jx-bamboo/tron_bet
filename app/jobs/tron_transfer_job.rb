@@ -60,11 +60,9 @@ class TronTransferJob < ApplicationJob
         success: nil   # 等待后续结果
       )
 
-      Rails.logger.info ".... Bot #{bot.id} 下注成功 | Tx: #{result[:transaction_id]} ...."
-      puts ".... Bot #{bot.id} 下注成功 | Tx: #{result[:transaction_id]} ...."
+      Rails.logger.info ".... Bot #{bot.id} Transfer successful | Tx: #{result[:transaction_id]} ...."
     else
-      Rails.logger.error ".... Bot #{bot.id} 转账失败: #{result[:error]} ...."
-      puts ".... Bot #{bot.id} 转账失败: #{result[:error]} ...."
+      Rails.logger.error ".... Bot #{bot.id} Transfer failed: #{result[:error]} ...."
       raise "Transfer failed"   # 触发 Job 重试
     end
   end

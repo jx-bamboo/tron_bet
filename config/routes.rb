@@ -6,6 +6,8 @@ Rails.application.routes.draw do
     member do
       post :start_bot
       post :stop_bot
+      post :paused_bot
+      post :reboot_bot
     end
   end
   resources :strategies

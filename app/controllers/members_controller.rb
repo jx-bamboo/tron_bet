@@ -108,6 +108,28 @@ class MembersController < ApplicationController
     end
   end
 
+  def paused_bot
+    @member = Member.find(params[:id])
+    success, message = @member.paused_bot!
+
+    if success
+      redirect_to @member, notice: message
+    else
+      redirect_to @member, alert: message
+    end
+  end
+
+  def reboot_bot
+    @member = Member.find(params[:id])
+    success, message = @member.reboot_bot!
+
+    if success
+      redirect_to @member, notice: message
+    else
+      redirect_to @member, alert: message
+    end
+  end
+
   # 盈利报表API
   def profit_report
     @member = Member.find(params[:id])

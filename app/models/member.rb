@@ -1,7 +1,7 @@
 class Member < ApplicationRecord
   validates :username, :tron_address, :tron_private_key, :strategy, presence: true
   validates :tron_address, :tron_private_key, uniqueness: true
-  validates :strategy, inclusion: { in: [ "zl2", "zl3", "zl4", "zl5_8" ] }
+  validates :strategy, inclusion: { in: [ "zl2", "zl3", "zl4", "zl2_3", "zl5_8" ] }
 
   enum :status, [ :inactive, :active ]
 
@@ -48,7 +48,7 @@ class Member < ApplicationRecord
 
       p ".... 🔉 机器人启动 - 会员: #{id}, 策略: #{strategy}, 开始余额: #{current_balance} ...."
       # 立即检查是否需要下注
-      bot_record.check_for_new_bet
+      bot_record.check_if_to_place_a_bet
     end
 
     [ true, "机器人启动成功" ]
@@ -89,6 +89,40 @@ class Member < ApplicationRecord
   rescue => e
     Rails.logger.error "停止机器人失败 - 会员: #{id}, 错误: #{e.message}"
     [ false, "停止失败: #{e.message}" ]
+  end
+
+  # 暂停机器人
+  def paused_bot!
+    return false, "无法暂停" if bot.status == "stopped" || bot.status == "waiting_result"
+
+    ActiveRecord::Base.transaction do
+      bot.update!(status: :paused)
+      update!(status: :inactive, active: false)
+      # 记录日志
+      puts "机器人暂停 - 会员: #{id}"
+    end
+
+    [ true, "机器人已暂停" ]
+  rescue => e
+    Rails.logger.error "暂停机器人失败 - 会员: #{id}, 错误: #{e.message}"
+    [ false, "暂停失败: #{e.message}" ]
+  end
+
+  # 暂停机器人
+  def reboot_bot!
+    return false, "无法重启" if bot.status != "paused"
+
+    ActiveRecord::Base.transaction do
+      bot.update!(status: :running)
+      update!(status: :active, active: true)
+      # 记录日志
+      puts "机器人已经重启 - 会员: #{id}"
+    end
+
+    [ true, "机器人已暂停" ]
+  rescue => e
+    Rails.logger.error "重启机器人失败 - 会员: #{id}, 错误: #{e.message}"
+    [ false, "重启失败: #{e.message}" ]
   end
 
   # 机器人状态文本

@@ -144,6 +144,8 @@ module MembersHelper
       "斩龙3"
     when "zl4"
       "斩龙4"
+    when "zl2_3"
+      "战龙2～3"
     when "zl5_8"
       "斩龙5~8"
     end

@@ -10,36 +10,47 @@ class Bot < ApplicationRecord
   DOUBLE_AMOUNTS = [ 10, 20, 44, 98, 206, 456, 960, 1998 ].freeze
   SINGLE_AMOUNTS = [ 11, 21, 47, 101, 213, 475, 981, 2021 ].freeze
 
-  # 处理新的区块记录（由 BlockMonitorJob 调用）
+  # BlockMonitorJob 保存区块后调用
   def process_new_block(latest_block)
     return false unless running? || waiting_result?
 
-    check_bet_result
-    check_for_new_bet
+    check_the_betting_result
+    check_if_to_place_a_bet
   end
 
-  # 核心监控方法
-  def check_for_new_bet
-    # 新增：检查是否有未结算的下注
+  def check_if_to_place_a_bet
+    # 检查是否有未标记结果的投注
     if bet_records.where(success: nil).exists?
-      puts ".... 机器人 #{id} 还有未结算的下注，跳过新下单 ...."
+      Rails.logging.info ".... 机器人 #{id} 还有未结算的下注，跳过新下单 ...."
       return false
     end
 
-    check_count = get_strategy_for_count
-    recent_records = BlockRecord.last(check_count) # 获取最新的区块记录
+    check_count = case strategy_type
+                  when "zl5_8"
+                    get_strategy_count_for_zl5_8
+                  when "zl2_3"
+                    get_strategy_count_for_zl2_3
+                  else
+                    get_strategy_for_count
+                  end
 
-    # 检查区块是否连续
+    recent_records = BlockRecord.last(check_count) # 根据砍龙数量，获取最新的区块记录
+
+    return false if recent_records.length < check_count
+
+    # 检查最新区块编号是否连续且没有断档
     unless blocks_consecutive?(recent_records.pluck(:number))
-      puts Paint[".... 区块不连续，跳过 ....", :yellow]
+      Rails.logging.info Paint[".... 区块不连续，跳过 ....", :yellow]
       return false
     end
+
+    return false unless long_streak_no_chop(check_count)
 
     # puts Paint[".... Bot#{id} | Strategy: #{get_strategy_text_log} | Current Streak: #{calculate_current_streak_length(recent_records.map(&:parity))} ....", :blue]
-    analyze_and_process(recent_records, check_count) # 分析连续情况
+    analyze_and_process(recent_records, check_count) # 分析数据并决定是否投注
   end
 
-  def check_bet_result
+  def check_the_betting_result
     # 获取最新的下注记录
     last_bet = bet_records.where(success: nil).last
     return false unless last_bet
@@ -48,7 +59,7 @@ class Bot < ApplicationRecord
 
     # 检查结果 - 注意：现在BetRecord的enum有前缀，我们需要使用数值比较
     bet_parity_value = last_bet.bet_parity_before_type_cast
-    success = (bet_parity_value == next_block.parity)
+    success = (bet_parity_value == next_block.parity) # 判断是否打中
 
     # 更新下注记录
     last_bet.update!(
@@ -167,44 +178,30 @@ class Bot < ApplicationRecord
     streak
   end
 
-  # 分析连续情况并处理
   def analyze_and_process(recent_records, check_count)
-    return false if recent_records.length < check_count
-
-    # 统一取最近的 parity 数组（从旧到新）
-    parities = recent_records.map(&:parity) # 获取最近的2个结果是否相同（0,0）
-    current_streak = calculate_current_streak_length(parities)
-
-    # ================== zl5_8 特殊逻辑 ==================
-    if strategy_type == "zl5_8"
-      if current_streak >= 5 && current_streak <= 8
-        execute_bet(recent_records.last, parities.last)
-        puts Paint[".... 🐉【#{member.username}】 zl5_8 砍龙中 | 连续 #{current_streak} 个 ....", :magenta]
-        return true
-      elsif current_streak > 8
-        puts Paint[".... 🛑【#{member.username}】 zl5_8 连续 #{current_streak} > 8，停止砍龙 ....", :red]
-        return false
-      else
-        return false  # 连续 < 5，不下注
-      end
-    end
-
-    # ================== 其他策略（zl2/zl3/zl4）保持原有逻辑 ==================
+    # 获取当前砍龙数量的区块
     check_blocks = recent_records.first(check_count)
+    # 获取单双结果
     parities_for_check = check_blocks.map(&:parity)
 
-    # 原有的长龙保护（count+1 全相同则不砍）
-    long_blocks = BlockRecord.last(check_count + 1)
-    if long_blocks.map(&:parity).uniq.length == 1
-      puts Paint[".... 🐉 【#{member.username}】 Long streak: no chop ....", :red]
+    # 如果结果都一样，说明满足长龙要求
+    if parities_for_check.uniq.size == 1
+      execute_bet(check_blocks.last, parities_for_check.last)
+    else
       return false
     end
+  end
 
-    if parities_for_check.uniq.length == 1
-      execute_bet(check_blocks.last, parities_for_check.last)
-      true
+  # 超过策略的长龙不砍（最后 check_count + 1 个结果全部相同则不砍）
+  def long_streak_no_chop(check_count)
+    long_blocks = BlockRecord.last(check_count + 1)
+
+    # 如果最后 check_count + 1 个 block 结果全部相同 → 不砍
+    if long_blocks.map(&:parity).uniq.size == 1
+      puts Paint[".... 🐉 【#{member.username}】 Long streak: no chop ....", :red]
+      return false   # 不砍
     else
-      false
+      return true    # 可以砍
     end
   end
 
@@ -277,12 +274,9 @@ class Bot < ApplicationRecord
   def execute_bet(block_record, streak_parity)
     bet_parity = streak_parity == 1 ? 0 : 1
     bet_amount = calculate_bet_amount(bet_parity)
-
-
     return false if bet_amount.nil?
 
     puts Paint[".... Bot##{id} | Strategy: #{get_strategy_text_log} | Bet: #{bet_amount}TRX | Side: #{bet_parity} ....", :cyan]
-
     # 直接入队，不在这里创建 BetRecord
     success = transfer_trx(bet_amount, block_record.id, bet_parity)
 
@@ -292,11 +286,10 @@ class Bot < ApplicationRecord
         current_parity: streak_parity,
         bet_amount_index: bet_amount
       )
-      puts Paint[".... 💸💸💸 【#{member.username}】 下注已提交 💸💸💸 ....", :green]
-      true
+      puts Paint[".... 💸💸💸 【#{member.username}】 Bet successful! 💸💸💸 ....", :green]
     else
-      puts Paint[".... ❌ 下注任务入队失败 ....", :red]
-      false
+      puts Paint[".... ❌ Bet failed! ....", :red]
+      return false
     end
   end
 
@@ -318,42 +311,6 @@ class Bot < ApplicationRecord
     end
   end
 
-  # 转账方法 - 调用您在ApplicationController中封装的方法
-  # def transfer_trx(amount, bet_record)
-  #   # 这里调用您在ApplicationController中封装的方法
-  #   result = ApplicationController.new.bet_transfer_trx(member.tron_private_key, amount)
-
-  #   if result[:success]
-  #     bet_record.update!(transaction_id: result[:transaction_id], status: :completed)
-
-  #     # 记录交易日志
-  #     # member.transaction_logs.create!(
-  #     #   transaction_type: "bet",
-  #     #   amount: amount,
-  #     #   transaction_hash: result[:transaction_id],
-  #     #   status: "success",
-  #     #   block_record: bet_record.block_record,
-  #     #   raw_data: result
-  #     # )
-
-  #     true
-  #   else
-  #     p ".... 转账失败 - 机器人: #{id}, 金额: #{amount} TRX, 错误: #{result[:error] || '未知错误'} ...."
-  #     bet_record.update!(transaction_id: result[:error], status: "failed")
-  #     # 记录失败的交易日志
-  #     # member.transaction_logs.create!(
-  #     #   transaction_type: "bet",
-  #     #   amount: amount,
-  #     #   status: "failed",
-  #     #   block_record: bet_record.block_record,
-  #     #   raw_data: { error: result[:error] }
-  #     # )
-  #     bet_record.destroy!
-
-
-  #     false
-  #   end
-  # end
   def transfer_trx(amount, block_record_id, bet_parity)
     TronTransferJob.perform_later(
       self.id,
@@ -361,11 +318,8 @@ class Bot < ApplicationRecord
       block_record_id,
       bet_parity
     )
-    true
   rescue => e
-    Rails.logger.error ".... #{id}] 转账 Job 入队失败: #{e.message} ...."
-    puts ".... #{id}] 转账 Job 入队失败: #{e.message} ...."
-    false
+    Rails.logger.error ".... #{id}] Tron transfer job failed: #{e.message} ...."
   end
 
   # 辅助方法：获取状态文本
@@ -392,6 +346,8 @@ class Bot < ApplicationRecord
       "ChopStreak(3)"
     when "zl4"
       "ChopStreak(4)"
+    when "zl2_3"
+      "ChopStreak(2_3)"
     when "zl5_8"
       "ChopStreak(5_8)"
     end
@@ -405,25 +361,48 @@ class Bot < ApplicationRecord
       3
     when "zl4"
       4
-    when "zl5_8"
-      case failed_times
-      when 0
-        5
-      when 1
-        6
-      when 2
-        7
-      when 3
-        8
-      when 4
-        5
-      when 5
-        6
-      when 6
-        7
-      when 7
-        8
-      end
+    end
+  end
+
+  def get_strategy_count_for_zl5_8
+    case failed_times
+    when 0
+      5
+    when 1
+      6
+    when 2
+      7
+    when 3
+      8
+    when 4
+      5
+    when 5
+      6
+    when 6
+      7
+    when 7
+      8
+    end
+  end
+
+  def get_strategy_count_for_zl2_3
+    case failed_times
+    when 0
+      2
+    when 1
+      3
+    when 2
+      2
+    when 3
+      3
+    when 4
+      2
+    when 5
+      3
+    when 6
+      2
+    when 7
+      3
     end
   end
 end
