@@ -66,6 +66,8 @@
         <div class="d-flex gap-2">
           <% if @member.active? %>
 
+<%
+=begin%>
             <% if @member.bot.status == "running" %>
               <%= link_to "暂停机器人",
                   paused_bot_member_path(@member),
@@ -74,16 +76,7 @@
                     turbo_method: :post,
                     turbo_confirm: "确定要暂停「#{@member.username}」的机器人吗？"
                   } %>
-            <% end %>
-            <%= link_to "停止机器人",
-                stop_bot_member_path(@member),
-                class: "btn btn-danger flex-grow-1",
-                data: {
-                  turbo_method: :post,
-                  turbo_confirm: "确定要停止「#{@member.username}」的机器人吗？"
-                } %>
-          <% else %>
-            <% if @member.bot.status == "paused" %>
+            <% elsif @member.bot.status == "paused" %>
               <%= link_to "已经暂停，重启机器人",
                 reboot_bot_member_path(@member),
                 class: "btn btn-warning flex-grow-1",
@@ -92,14 +85,24 @@
                   turbo_confirm: "确定要重启「#{@member.username}」的机器人吗？"
                 } %>
             <% end %>
-              <%= link_to "启动机器人",
-                  start_bot_member_path(@member),
-                  class: "btn btn-success flex-grow-1",
-                  data: {
-                    turbo_method: :post,
-                    turbo_confirm: "确定要启动「#{@member.username}」的机器人吗？"
-                  } %>
-            <% end %>
+<%
+=end%>
+            <%= link_to "停止机器人",
+                stop_bot_member_path(@member),
+                class: "btn btn-danger flex-grow-1",
+                data: {
+                  turbo_method: :post,
+                  turbo_confirm: "确定要停止「#{@member.username}」的机器人吗？"
+                } %>
+          <% else %>
+            <%= link_to "启动机器人",
+                start_bot_member_path(@member),
+                class: "btn btn-success flex-grow-1",
+                data: {
+                  turbo_method: :post,
+                  turbo_confirm: "确定要启动「#{@member.username}」的机器人吗？"
+                } %>
+          <% end %>
 
 
           <div class="dropdown">
