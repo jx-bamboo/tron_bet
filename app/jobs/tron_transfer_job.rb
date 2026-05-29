@@ -40,7 +40,9 @@ class TronTransferJob < ApplicationJob
                      key: "trongrid_transfer",
                      duration: 2.seconds
 
-  retry_on StandardError, wait: :exponentially_longer, attempts: 4
+  retry_on StandardError, wait: 2.seconds, attempts: 4
+  # 记录找不到直接丢弃
+  discard_on ActiveRecord::RecordNotFound
 
   def perform(bot_id, amount, block_record_id, bet_parity)
     bot = Bot.find(bot_id)
@@ -66,8 +68,23 @@ class TronTransferJob < ApplicationJob
 
       logger.info Paint[".... Bot #{bot.id} Transfer successful | Tx: #{result[:transaction_id]} ....", :green]
     else
-      logger.error Paint[".... Bot #{bot.id} Transfer failed: #{result[:error]} ....", :red]
-      raise "Transfer failed"   # 触发 Job 重试
+      # logger.error Paint[".... Bot #{bot.id} Transfer failed: #{result[:error]} ....", :red]
+      # raise "Transfer failed"   # 触发 Job 重试
+      #
+      error_msg = result[:error] || "Unknown error"
+
+      logger.error Paint["[TronTransfer] FAILED Bot #{bot.id} | Amount: #{amount} | Error: #{error_msg}", :red]
+
+      # ==================== 关键判断 ====================
+      if error_msg.to_s.match?(/429|rate.?limit|too many|frequency|over limit/i)
+        logger.warn Paint["[TronTransfer] Rate limit detected, will retry soon - Bot #{bot_id}", :yellow]
+        raise "TronGrid Rate Limit: #{error_msg}"   # 让 retry_on 处理
+      else
+        raise "Transfer failed: #{error_msg}"
+      end
     end
+  rescue StandardError => e
+    logger.error Paint["[TronTransfer] Error occurred - Bot #{bot_id} | #{e.class}: #{e.message}", :red]
+    raise  # 重新抛出，让 Solid Queue 的 retry_on 机制处理
   end
 end
