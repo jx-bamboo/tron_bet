@@ -45,7 +45,7 @@ class TronBlockMonitorJob < ApplicationJob
 
   # ====================== 首次运行 ======================
   def handle_first_run(current_target)
-    puts Paint[".... First startup，Synchronize #{INITIAL_BACKFILL_COUNT} blocks ....", :yellow]
+    logger.info Paint[".... First startup，Synchronize #{INITIAL_BACKFILL_COUNT} blocks ....", :yellow]
     # 计算起始区块号（当前整点区块向前推4个，加上当前共5个）
     start_num = [current_target - (INITIAL_BACKFILL_COUNT - 1) * 20, 20].max
     # 保存前n-1个历史区块，不触发机器人策略
@@ -64,12 +64,12 @@ class TronBlockMonitorJob < ApplicationJob
     if missing_blocks == 1
       save_block_and_trigger(current_target)
     else
-      puts Paint[".... #{missing_blocks} blocks lost， #{last_processed} → #{current_target} ....", :yellow]
+      logger.info Paint[".... #{missing_blocks} blocks lost， #{last_processed} → #{current_target} ....", :yellow]
 
       backfill_count = [missing_blocks, INITIAL_BACKFILL_COUNT].min
       start_num = current_target - (backfill_count - 1) * 20
 
-      puts Paint[".... Filling in #{backfill_count} blocks ....", :yellow]
+      logger.info Paint[".... Filling in #{backfill_count} blocks ....", :yellow]
 
       (start_num...current_target).step(20) do |num|
         save_block_quietly(num)
@@ -93,7 +93,7 @@ class TronBlockMonitorJob < ApplicationJob
 
     if block_data
       save_block_record(block_data)
-      Rails.logger.info ".... 【Old】 Save 【#{block_number}】 .... Time 【#{Time.now}】 ...."
+      logger.info ".... 【Old】 Save 【#{block_number}】 .... Time 【#{Time.now}】 ...."
     end
   end
 
@@ -152,7 +152,7 @@ class TronBlockMonitorJob < ApplicationJob
     if remaining_seconds >= MINIMUM_TIME_FOR_TRANSFER
       true
     else
-      puts Paint[".... ⚠ 区块已过 #{elapsed_seconds}s，剩余约 #{remaining_seconds}s，时间不足，跳过机器人 ....", :red]
+      logger.info Paint[".... ⚠ 区块已过 #{elapsed_seconds}s，剩余约 #{remaining_seconds}s，时间不足，跳过机器人 ....", :red]
       false
     end
   end
@@ -165,14 +165,15 @@ class TronBlockMonitorJob < ApplicationJob
     active_bots = Bot.where(status: [ :running, :waiting_result ])
     return unless active_bots.any?
 
-    puts Paint[".... #{active_bots.count} active robot, 【#{latest_block.number}】 ....", :blue]
+    logger.info Paint[".... #{active_bots.count} active robot, 【#{latest_block.number}】 ....", :blue]
 
     active_bots.each do |bot|
       begin
         bot.process_new_block(latest_block)
       rescue => e
-        Rails.logger.error ".... Bot #{bot.id} 处理新区块出错: #{e.message} ...."
+        logger.error ".... Bot #{bot.id} 处理新区块出错: #{e.message} ...."
       end
+      sleep 0.1
     end
   end
 
@@ -182,7 +183,7 @@ class TronBlockMonitorJob < ApplicationJob
     return unless response.is_a?(Net::HTTPSuccess)
     JSON.parse(response.body)
   rescue => e
-    Rails.logger.error ".... Fetch new false: #{e.message} ...."
+    logger.error ".... Fetch new false: #{e.message} ...."
     nil
   end
 
@@ -201,7 +202,7 @@ class TronBlockMonitorJob < ApplicationJob
     return unless response.is_a?(Net::HTTPSuccess)
     JSON.parse(response.body)
   rescue => e
-    Rails.logger.error ".... Fetch #{num} by number false: #{e.message} ...."
+    logger.error ".... Fetch #{num} by number false: #{e.message} ...."
     nil
   end
 
@@ -222,7 +223,7 @@ class TronBlockMonitorJob < ApplicationJob
       block_time:  block_time
     )
   rescue ActiveRecord::RecordInvalid => e
-    Rails.logger.error ".... Save block false: #{e.message} ...."
+    logger.error ".... Save block false: #{e.message} ...."
     nil
   end
 end

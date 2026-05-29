@@ -88,7 +88,7 @@ class Bot < ApplicationRecord
         last_bet.update!(note: "Consecutive bet losses reached stop-loss limit")
         puts Paint[".... Bot#{id} | 【#{member.username}】 | Loss failed: #{new_failed_times}", :red]
       end
-      puts Paint[".... 🧨 【#{member.username}】 Loss failed: #{new_failed_times} ....", :red]
+      logger.info Paint[".... 🧨 【#{member.username}】 Loss failed: #{new_failed_times} ....", :red]
       false
     end
   end
@@ -198,7 +198,7 @@ class Bot < ApplicationRecord
 
     # 如果最后 check_count + 1 个 block 结果全部相同 → 不砍
     if long_blocks.map(&:parity).uniq.size == 1
-      puts Paint[".... 🐉 【#{member.username}】 Long streak: no chop ....", :red]
+      logger.info Paint[".... 🐉 【#{member.username}】 Long streak: no chop ....", :red]
       return false   # 不砍
     else
       return true    # 可以砍
@@ -320,6 +320,7 @@ class Bot < ApplicationRecord
     )
   rescue => e
     logger.error Paint[".... Bot #{id}: Tron transfer job failed: #{e.message} ....", :red]
+    false
   end
 
   # 辅助方法：获取状态文本

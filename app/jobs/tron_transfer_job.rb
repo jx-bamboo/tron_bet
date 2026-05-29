@@ -36,7 +36,7 @@
 class TronTransferJob < ApplicationJob
   queue_as :tron_transfers
 
-  limits_concurrency to: 10,
+  limits_concurrency to: 8,
                      key: "trongrid_transfer",
                      duration: 2.seconds
 
@@ -65,10 +65,8 @@ class TronTransferJob < ApplicationJob
       )
 
       logger.info Paint[".... Bot #{bot.id} Transfer successful | Tx: #{result[:transaction_id]} ....", :green]
-      puts Paint[".... Bot #{bot.id} Transfer successful | Tx: #{result[:transaction_id]} ....", :green]
     else
       logger.error Paint[".... Bot #{bot.id} Transfer failed: #{result[:error]} ....", :red]
-      puts Paint[".... Bot #{bot.id} Transfer failed: #{result[:error]} ....", :red]
       raise "Transfer failed"   # 触发 Job 重试
     end
   end
