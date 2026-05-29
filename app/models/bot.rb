@@ -21,7 +21,7 @@ class Bot < ApplicationRecord
   def check_if_to_place_a_bet
     # 检查是否有未标记结果的投注
     if bet_records.where(success: nil).exists?
-      Rails.logging.info ".... 机器人 #{id} 还有未结算的下注，跳过新下单 ...."
+      logger.info ".... 机器人 #{id} 还有未结算的下注，跳过新下单 ...."
       return false
     end
 
@@ -40,7 +40,7 @@ class Bot < ApplicationRecord
 
     # 检查最新区块编号是否连续且没有断档
     unless blocks_consecutive?(recent_records.pluck(:number))
-      Rails.logging.info Paint[".... 区块不连续，跳过 ....", :yellow]
+      logger.info Paint[".... 区块不连续，跳过 ....", :yellow]
       return false
     end
 
@@ -276,7 +276,7 @@ class Bot < ApplicationRecord
     bet_amount = calculate_bet_amount(bet_parity)
     return false if bet_amount.nil?
 
-    puts Paint[".... Bot##{id} | Strategy: #{get_strategy_text_log} | Bet: #{bet_amount}TRX | Side: #{bet_parity} ....", :cyan]
+    logger.info Paint[".... Bot##{id} | Strategy: #{get_strategy_text_log} | Bet: #{bet_amount}TRX | Side: #{bet_parity} ....", :cyan]
     # 直接入队，不在这里创建 BetRecord
     success = transfer_trx(bet_amount, block_record.id, bet_parity)
 
@@ -286,9 +286,9 @@ class Bot < ApplicationRecord
         current_parity: streak_parity,
         bet_amount_index: bet_amount
       )
-      puts Paint[".... 💸💸💸 【#{member.username}】 Bet successful! 💸💸💸 ....", :green]
+      logger.info Paint[".... 💸💸💸 【#{member.username}】 Bet successful! 💸💸💸 ....", :green]
     else
-      puts Paint[".... ❌ Bet failed! ....", :red]
+      logger.error Paint[".... ❌ Bet failed! ....", :red]
       return false
     end
   end
@@ -319,7 +319,7 @@ class Bot < ApplicationRecord
       bet_parity
     )
   rescue => e
-    Rails.logger.error ".... #{id}] Tron transfer job failed: #{e.message} ...."
+    logger.error Paint[".... Bot #{id}: Tron transfer job failed: #{e.message} ....", :red]
   end
 
   # 辅助方法：获取状态文本
