@@ -25,7 +25,7 @@ class TronTransferService
           amount: amount_sun
         }
       )
-
+      sleep 0.3
       # 本地签名
       tx_hash = Tron::Utils::Crypto.hex_to_bin(transaction["txID"])
       signature = key.sign(tx_hash)

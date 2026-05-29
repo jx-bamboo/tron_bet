@@ -36,7 +36,12 @@
 class TronTransferJob < ApplicationJob
   queue_as :tron_transfers
 
+  limits_concurrency to: 10,
+                     key: "trongrid_transfer",
+                     duration: 2.seconds
+
   retry_on StandardError, wait: :exponentially_longer, attempts: 4
+  retry_on TronGridRateLimitError, wait: 3.seconds, attempts: 6   # 针对 429 特殊处理
 
   def perform(bot_id, amount, block_record_id, bet_parity)
     bot = Bot.find(bot_id)
@@ -62,8 +67,21 @@ class TronTransferJob < ApplicationJob
 
       Rails.logger.info ".... Bot #{bot.id} Transfer successful | Tx: #{result[:transaction_id]} ...."
     else
-      Rails.logger.error ".... Bot #{bot.id} Transfer failed: #{result[:error]} ...."
-      raise "Transfer failed"   # 触发 Job 重试
+      # Rails.logger.error ".... Bot #{bot.id} Transfer failed: #{result[:error]} ...."
+      # raise "Transfer failed"   # 触发 Job 重试
+      error_msg = result[:error] || "Unknown error"
+      Rails.logger.error "[TronTransfer] FAILED Bot #{bot.id} | Amount: #{amount} | Error: #{error_msg}"
+
+      # 如果是频率限制错误，抛出特定异常方便单独重试
+      if error_msg.to_s.downcase.include?("429") || error_msg.to_s.include?("rate limit")
+        raise TronGridRateLimitError.new(error_msg)
+      end
+
+      raise "Transfer failed: #{error_msg}"   # 触发普通重试
     end
+
+  rescue TronGridRateLimitError => e
+    Rails.logger.warn "[TronTransfer] Rate limited, will retry soon - #{e.message}"
+    raise # 继续让 retry_on 处理
   end
 end
