@@ -34,6 +34,7 @@
 #   end
 # end
 class TronTransferJob < ApplicationJob
+  self.enqueue_after_transaction_commit = true   # 只对这个 Job 生效
   queue_as :tron_transfers
 
   limits_concurrency to: 8,
