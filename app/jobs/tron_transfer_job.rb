@@ -42,7 +42,7 @@ class TronTransferJob < ApplicationJob
 
   retry_on StandardError, wait: 2.seconds, attempts: 4
   # 记录找不到直接丢弃
-  discard_on ActiveRecord::RecordNotFound
+  discard_on ActiveRecord::RecordNotFound, attempts: 3
 
   def perform(bot_id, amount, block_record_id, bet_parity)
     bot = Bot.find(bot_id)
