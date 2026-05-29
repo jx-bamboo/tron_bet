@@ -42,7 +42,6 @@ class TronTransferJob < ApplicationJob
 
   retry_on StandardError, wait: 2.seconds, attempts: 4
   # 记录找不到直接丢弃
-  discard_on ActiveRecord::RecordNotFound, attempts: 3
 
   def perform(bot_id, amount, block_record_id, bet_parity)
     bot = Bot.find(bot_id)
@@ -78,9 +77,9 @@ class TronTransferJob < ApplicationJob
       # ==================== 关键判断 ====================
       if error_msg.to_s.match?(/429|rate.?limit|too many|frequency|over limit/i)
         logger.warn Paint["[TronTransfer] Rate limit detected, will retry soon - Bot #{bot_id}", :yellow]
-        raise "TronGrid Rate Limit: #{error_msg}"   # 让 retry_on 处理
+        raise ".... TronGrid Rate Limit: #{error_msg} ...."   # 让 retry_on 处理
       else
-        raise "Transfer failed: #{error_msg}"
+        raise ".... Transfer failed: #{error_msg} ...."
       end
     end
   rescue StandardError => e
