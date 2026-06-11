@@ -85,12 +85,10 @@ class TronBlockMonitorJob < ApplicationJob
     block_data = fetch_block_by_number(block_number)
     # 最多做一次备用尝试
     if block_data.nil?
-      sleep 0.7
+      sleep 0.1
       block_data = fetch_block_by_number(block_number)
     end
-
     return unless block_data
-
     if block_data
       save_block_record(block_data)
       logger.info ".... 【Old】 Save 【#{block_number}】 .... Time 【#{Time.now}】 ...."
@@ -100,55 +98,30 @@ class TronBlockMonitorJob < ApplicationJob
   # 保存区块并触发机器人策略（有时间判断）
   def save_block_and_trigger(block_number)
     return if BlockRecord.exists?(number: block_number)
-    # puts Paint[".... Try save 【#{block_number}】 ....", :yellow]
-
     block_data = fetch_block_by_number(block_number)
     # 最多做一次备用尝试（符合你“尽量一次成功”的要求）
     if block_data.nil?
-      sleep 0.8
+      sleep 0.1
       block_data = fetch_block_by_number(block_number)
     end
     return unless block_data
-
     # 保存区块记录
     block_record = save_block_record(block_data)
     return unless block_record
-
     # puts Paint[".... Save 【#{block_number}】 .... Time 【#{Time.now}】 ....", :green]
     # Rails.logger.info ".... Save 【#{block_number}】 .... Time 【#{Time.now}】 .... Parity #{block_record.parity} ...."
-
     # 判断时间是否足够执行机器人策略
     if enough_time_for_transfer?(block_record.block_time)
       trigger_bot_monitoring
     end
   end
 
-  # def enough_time_for_transfer?(block_time)
-  #   # 区块时间是以UTC存储的，转换为本地时间进行比较
-  #   block_local_time = block_time.localtime
-
-  #   # 计算这个整点区块产生后已经过去了多少秒
-  #   elapsed_seconds = Time.current.to_i - block_local_time.to_i
-
-  #   # 下一个整点区块将在60秒后产生
-  #   remaining_seconds = 60 - elapsed_seconds
-
-  #   if remaining_seconds >= MINIMUM_TIME_FOR_TRANSFER
-  #     # puts Paint[".... ⏱ 区块 #{block_local_time.strftime('%H:%M:%S')} 已过去 #{elapsed_seconds}秒，距离下一个区块还有 #{remaining_seconds}秒，时间充足 ....", :green]
-  #     true
-  #   else
-  #     puts Paint[".... ⚠ 区块 #{block_local_time.strftime('%H:%M:%S')} 已过去 #{elapsed_seconds}秒，距离下一个区块还有 #{remaining_seconds}秒，时间不足 ....", :red]
-  #     false
-  #   end
-  # end
-
+  # 区块时间是以UTC存储的，转换为本地时间: block_time.localtime
   def enough_time_for_transfer?(block_time)
     # 全部使用 UTC 计算，安全可靠
     elapsed_seconds = Time.now.utc.to_i - block_time.to_i
-
     # 计算距离下一个整点还剩多少秒
     remaining_seconds = 60 - (elapsed_seconds % 60)
-
     if remaining_seconds >= MINIMUM_TIME_FOR_TRANSFER
       true
     else
@@ -173,7 +146,7 @@ class TronBlockMonitorJob < ApplicationJob
       rescue => e
         logger.error ".... Bot #{bot.id} 处理新区块出错: #{e.message} ...."
       end
-      sleep 0.1
+      sleep 0.15
     end
   end
 

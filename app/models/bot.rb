@@ -13,7 +13,6 @@ class Bot < ApplicationRecord
   # BlockMonitorJob 保存区块后调用
   def process_new_block(latest_block)
     return false unless running? || waiting_result?
-
     check_the_betting_result
     check_if_to_place_a_bet
   end
@@ -26,6 +25,8 @@ class Bot < ApplicationRecord
     end
 
     check_count = case strategy_type
+                  when "zl7_9"
+                    get_strategy_count_for_zl7_9
                   when "zl5_8"
                     get_strategy_count_for_zl5_8
                   when "zl2_3"
@@ -35,7 +36,6 @@ class Bot < ApplicationRecord
                   end
 
     recent_records = BlockRecord.last(check_count) # 根据砍龙数量，获取最新的区块记录
-
     return false if recent_records.length < check_count
 
     # 检查最新区块编号是否连续且没有断档
@@ -43,8 +43,7 @@ class Bot < ApplicationRecord
       logger.info Paint[".... 区块不连续，跳过 ....", :yellow]
       return false
     end
-
-    return false unless long_streak_no_chop(check_count)
+    return false unless long_streak_stop_chopping(check_count)
 
     # puts Paint[".... Bot#{id} | Strategy: #{get_strategy_text_log} | Current Streak: #{calculate_current_streak_length(recent_records.map(&:parity))} ....", :blue]
     analyze_and_process(recent_records, check_count) # 分析数据并决定是否投注
@@ -75,7 +74,7 @@ class Bot < ApplicationRecord
         bet_amount_index: 0
       )
       last_bet.update!(note: "Winner")
-      puts Paint[".... 💐💐💐 Nice one, 【#{member.username}】 Winner! 【₿ #{last_bet.bet_amount * 1.95}】 💐💐💐 ....", "#FFA500"]
+      logger.info Paint[".... 💐💐💐 Nice one, 【#{member.username}】 Winner! 【₿ #{last_bet.bet_amount * 1.95}】 💐💐💐 ....", "#FFA500"]
       true
     else
       # 下注失败
@@ -193,15 +192,14 @@ class Bot < ApplicationRecord
   end
 
   # 超过策略的长龙不砍（最后 check_count + 1 个结果全部相同则不砍）
-  def long_streak_no_chop(check_count)
+  def long_streak_stop_chopping(check_count)
     long_blocks = BlockRecord.last(check_count + 1)
-
     # 如果最后 check_count + 1 个 block 结果全部相同 → 不砍
     if long_blocks.map(&:parity).uniq.size == 1
-      logger.info Paint[".... 🐉 【#{member.username}】 Long streak: no chop ....", :red]
-      return false   # 不砍
+      logger.info Paint[".... 🐉 【#{member.username}】 Long streak: Stop chopping ....", :red]
+      false   # 不砍
     else
-      return true    # 可以砍
+      true    # 可以砍
     end
   end
 
@@ -351,6 +349,8 @@ class Bot < ApplicationRecord
       "ChopStreak(2_3)"
     when "zl5_8"
       "ChopStreak(5_8)"
+    when "zl7_9"
+      "ChopStreak(7_9)"
     end
   end
 
@@ -362,6 +362,31 @@ class Bot < ApplicationRecord
       3
     when "zl4"
       4
+    when "zl5"
+      5
+    when "zl6"
+      6
+    end
+  end
+
+  def get_strategy_count_for_zl7_9
+    case failed_times
+    when 0
+      7
+    when 1
+      8
+    when 2
+      9
+    when 3
+      7
+    when 4
+      8
+    when 5
+      9
+    when 6
+      7
+    when 7
+      8
     end
   end
 

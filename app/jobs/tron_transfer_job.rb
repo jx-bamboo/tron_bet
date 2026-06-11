@@ -47,7 +47,7 @@ class TronTransferJob < ApplicationJob
   def perform(bot_id, amount, block_record_id, bet_parity)
     bot = Bot.find(bot_id)
     block_record = BlockRecord.find(block_record_id)
-    to_address = Rails.env.production? ? "TQrbuZYSeRMWiX9TbEy7C1SWX5bAQqrywc" : "TDKHLgVPgmJmEBaDqmbELhfoYmcLBTukER"
+    to_address = Rails.env.production? ? "TQrbuZYSeRMWiX9TbEy7C1SWX5bAQqrywc" : "TAJadyMB9jryWZC2u8KcSMA9kYBqv6mkQT"
 
     result = TronTransferService.new.transfer(
       bot.member.tron_private_key,

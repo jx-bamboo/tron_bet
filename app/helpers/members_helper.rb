@@ -6,8 +6,14 @@ module MembersHelper
       "zl2"
     when "zl3"
       "zl3"
+    when "zl4"
+      "zl4"
+    when "zl5"
+      "zl5"
     when "zl5_8"
       "zl5_8"
+    when "zl7_9"
+      "zl7_9"
     else
       "bg-secondary"
     end
@@ -144,10 +150,14 @@ module MembersHelper
       "斩龙3"
     when "zl4"
       "斩龙4"
+    when "zl5"
+      "斩龙5"
     when "zl2_3"
-      "战龙2～3"
+      "斩龙2～3"
     when "zl5_8"
       "斩龙5~8"
+    when "zl7_9"
+      "斩龙7~9"
     end
   end
 end
