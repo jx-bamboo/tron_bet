@@ -345,6 +345,12 @@ class Bot < ApplicationRecord
       "ChopStreak(3)"
     when "zl4"
       "ChopStreak(4)"
+    when "zl5"
+      "ChopStreak(5)"
+    when "zl6"
+      "ChopStreak(6)"
+    when "zl7"
+      "ChopStreak(7)"
     when "zl2_3"
       "ChopStreak(2_3)"
     when "zl5_8"
@@ -366,6 +372,8 @@ class Bot < ApplicationRecord
       5
     when "zl6"
       6
+    when "zl7"
+      7
     end
   end
 
