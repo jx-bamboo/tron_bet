@@ -15,7 +15,7 @@
     </div>
     <%= bot_status_text member.bot&.status %>
   </div>
-  
+
   <!-- 主要信息 -->
   <div class="row g-3">
     <!-- TRON地址 -->
@@ -26,15 +26,15 @@
         </div>
         <div class="card-info-value">
           <div class="input-group">
-            <input type="text" 
-                   class="form-control bg-dark text-light border-secondary font-monospace" 
-                   value="<%= member.tron_address %>" 
+            <input type="text"
+                   class="form-control bg-dark text-light border-secondary font-monospace"
+                   value="<%= member.tron_address %>"
                    readonly
                    id="address-<%= member.id %>">
-            <button class="btn btn-outline-secondary btn-sm" 
+            <button class="btn btn-outline-secondary btn-sm"
                     type="button"
                     onclick="copyToClipboard('address-<%= member.id %>', this)">
-              <i class="bi bi-clipboard"></i>
+                      <i class="bi bi-copy"></i>复制
             </button>
           </div>
         </div>
@@ -53,7 +53,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 策略和状态 -->
     <div class="col-md-6">
       <div class="card-info">
@@ -75,14 +75,14 @@
     const element = document.getElementById(elementId);
     element.select();
     element.setSelectionRange(0, 99999);
-    
+
     navigator.clipboard.writeText(element.value).then(() => {
       const originalHTML = button.innerHTML;
       const originalClass = button.className;
-      
+
       button.innerHTML = '<i class="bi bi-check"></i>';
       button.className = 'btn btn-success btn-sm';
-      
+
       setTimeout(() => {
         button.innerHTML = originalHTML;
         button.className = originalClass;
