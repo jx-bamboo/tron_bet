@@ -49,7 +49,7 @@ production:
   primary: &primary_production
     <<: *default_postgres
     database: storage/tron_bet_production
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 10 } %>
 
   cable:
     <<: *primary_production

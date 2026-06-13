@@ -27,10 +27,10 @@ production:
     - queues: default
       threads: 4
       processes: 1
-      polling_interval: 0.3
+      polling_interval: 1
 
     # Tron 转账专用队列 —— 严格控制并发
     - queues: tron_transfers
-      threads: 8 # 生产关键：限制为8，保护15 QPS
+      threads: 6 # 生产关键：限制为8，保护15 QPS
       processes: 1
-      polling_interval: 0.3
+      polling_interval: 0.4
