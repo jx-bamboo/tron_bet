@@ -97,9 +97,9 @@ class Member < ApplicationRecord
 
     ActiveRecord::Base.transaction do
       bot.update!(status: :paused)
-      update!(status: :inactive, active: false)
+      # update!(status: :inactive, active: false)
       # 记录日志
-      puts "机器人暂停 - 会员: #{id}"
+      puts ".... 机器人暂停 - 会员: #{id} ...."
     end
 
     [ true, "机器人已暂停" ]
@@ -108,21 +108,35 @@ class Member < ApplicationRecord
     [ false, "暂停失败: #{e.message}" ]
   end
 
-  # 暂停机器人
+  # 重启机器人
   def reboot_bot!
     return false, "无法重启" if bot.status != "paused"
 
     ActiveRecord::Base.transaction do
       bot.update!(status: :running)
-      update!(status: :active, active: true)
+      # update!(status: :active, active: true)
       # 记录日志
-      puts "机器人已经重启 - 会员: #{id}"
+      puts ".... 机器人已经重启 - 会员: #{id} ...."
     end
 
     [ true, "机器人已暂停" ]
   rescue => e
     Rails.logger.error "重启机器人失败 - 会员: #{id}, 错误: #{e.message}"
     [ false, "重启失败: #{e.message}" ]
+  end
+
+  def reset_bot!
+    # return false if bot.status == "waiting_result"
+
+    ActiveRecord::Base.transaction do
+      bot.update(failed_times: 0)
+      update!(status: :inactive, active: false)
+    end
+
+    [ true, "机器人已重置" ]
+  rescue => e
+    Rails.logger.error "重置机器人失败 - 会员: #{id}, 错误: #{e.message}"
+    [ false, "重置失败: #{e.message}" ]
   end
 
   # 机器人状态文本
