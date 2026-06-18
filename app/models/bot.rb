@@ -31,6 +31,10 @@ class Bot < ApplicationRecord
                     get_strategy_count_for_zl5_8
                   when "zl2_3"
                     get_strategy_count_for_zl2_3
+                  when "zl2_3_m"
+                    get_zl2_3_m
+                  when "zl3_4_m"
+                    get_zl3_4_m
                   else
                     get_strategy_for_count
                   end
@@ -203,75 +207,16 @@ class Bot < ApplicationRecord
     end
   end
 
-  # 分析连续情况并处理（没有zl5_8这种可以直接上）
-  # def analyze_and_process(recent_records, check_count)
-  #   # 获取需要检查的区块
-  #   check_blocks = recent_records.first(check_count)
-  #   return false if check_blocks.length < check_count
-
-  #   # 检查是否全部相同，使用uniq去重，如果所有值相同则parities长度为1
-  #   parities = check_blocks.map(&:parity).uniq
-
-  #   long_blocks = BlockRecord.last(check_count + 1)
-  #   if long_blocks.map(&:parity).uniq.length == 1
-  #     puts Paint[".... 🐉 【#{member.username}】 Long streak: no chop ....", :red]
-  #     return false
-  #   end
-
-  #   if parities.length == 1
-  #     execute_bet(check_blocks.last, parities.first) # 参数（最后一个区块， 最后一个单双结果）连续相同结果，执行反向下注
-  #     true
-  #   else
-  #     # puts Paint[".... Not match ....", :yellow]
-  #     false
-  #   end
-  # end
-
-  # 执行下注, streak_parity 当前连续出现的单双结果，
-  # def execute_bet(block_record, streak_parity)
-  #   bet_parity = streak_parity == 1 ? 0 : 1  # 反向下注； 1是单，0是双； bet_parity就是要下注的方向
-
-  #   bet_amount = calculate_bet_amount(bet_parity) # 计算下注金额，这里需要添加失败计算次数
-
-  #   # 创建下注记录
-  #   bet_record = bet_records.create!(
-  #     block_record: block_record,
-  #     bet_parity: bet_parity, # 下注方向
-  #     bet_amount: bet_amount, # 下注金额
-  #     status: :pending
-  #   )
-
-  #   puts Paint[".... Bot##{id} | Strategy: #{get_strategy_text_log} | Bet: #{bet_amount}TRX | Side: #{bet_record.bet_parity_text} ....", :cyan]
-
-  #   # 执行转账
-  #   if transfer_trx(bet_amount, bet_record)
-  #     # 进入等待结果状态
-  #     update!(
-  #       status: :waiting_result,
-  #       current_parity: streak_parity, # 当前的连续结果，不是下注结果
-  #       bet_amount_index: bet_amount
-  #     )
-
-  #     puts Paint[".... 💸💸💸 【#{member.username}】 Bet placed 💸💸💸 ....", :green]
-  #     true
-  #   else
-  #     # 转账失败
-  #     # bet_record.update!(
-  #     #   success: false,
-  #     #   note: "转账失败",
-  #     #   status: :failed
-
-  #     # )
-  #     puts ".... 下注执行失败 - 下注ID: #{bet_record.id} ...."
-  #     false
-  #   end
-  # end
 
   # execute_bet 方法重构
   # streak_parity 出现的长龙方向
   def execute_bet(block_record, streak_parity)
     bet_parity = streak_parity == 1 ? 0 : 1
-    bet_amount = calculate_bet_amount(bet_parity)
+    if strategy_type == "zl2_3_m" || strategy_type == "zl3_4_m"
+      bet_amount = failed_times.even? ? 50 : 100
+    else
+      bet_amount = calculate_bet_amount(bet_parity)
+    end
     return false if bet_amount.nil?
 
     logger.info Paint[".... Bot##{id} | Strategy: #{get_strategy_text_log} | Bet: #{bet_amount}TRX | Side: #{bet_parity} ....", :cyan]
@@ -357,6 +302,10 @@ class Bot < ApplicationRecord
       "ChopStreak(5_8)"
     when "zl7_9"
       "ChopStreak(7_9)"
+    when "zl2_3_m"
+      "ChopStreak(2_3_m)"
+    when "zl3_4_m"
+      "ChopStreak(3_4_m)"
     end
   end
 
@@ -438,5 +387,13 @@ class Bot < ApplicationRecord
     when 7
       3
     end
+  end
+
+  def get_zl2_3_m
+    failed_times.even? ? 2 : 3
+  end
+
+  def get_zl3_4_m
+    failed_times.even? ? 3 : 4
   end
 end

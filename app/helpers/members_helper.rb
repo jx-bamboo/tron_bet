@@ -166,6 +166,10 @@ module MembersHelper
       "斩龙5~8"
     when "zl7_9"
       "斩龙7~9"
+    when "zl2_3_m"
+      "斩龙2～3无限版"
+    when "zl3_4_m"
+      "斩龙3～4无限版"
     end
   end
 end
