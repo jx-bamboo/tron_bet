@@ -86,7 +86,9 @@ class Bot < ApplicationRecord
       update!(failed_times: new_failed_times)
 
       # 检查是否达到止损，根据命数决定，如果10条命，那么 > 9
-      if new_failed_times > 7
+      if new_failed_times > 7 &&
+         strategy_type != "zl2_3_m" &&
+         strategy_type != "zl3_4_m"
         update!(status: :paused)
         last_bet.update!(note: "Consecutive bet losses reached stop-loss limit")
         puts Paint[".... Bot#{id} | 【#{member.username}】 | Loss failed: #{new_failed_times}", :red]
@@ -213,7 +215,7 @@ class Bot < ApplicationRecord
   def execute_bet(block_record, streak_parity)
     bet_parity = streak_parity == 1 ? 0 : 1
     if strategy_type == "zl2_3_m" || strategy_type == "zl3_4_m"
-      bet_amount = failed_times.even? ? 50 : 100
+      bet_amount = calculate_bet_amount_m(bet_parity)
     else
       bet_amount = calculate_bet_amount(bet_parity)
     end
@@ -235,6 +237,15 @@ class Bot < ApplicationRecord
       return false
     end
   end
+
+  def calculate_bet_amount_m(bet_parity)
+    if bet_parity == 1
+      failed_times.even? ? 51 : 101
+    else
+      failed_times.even? ? 50 : 100
+    end
+  end
+
 
   # 计算下注金额 - 这是核心逻辑
   # bet_parity 就是要下注的方向，金额找相对应的方向数组（以第一个数组元素为基准）
