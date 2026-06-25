@@ -357,7 +357,7 @@ GEM
       google-protobuf (>= 3.25, < 5.0)
     sass-embedded (1.77.5-x86_64-linux-gnu)
       google-protobuf (>= 3.25, < 5.0)
-    secp256k1rb (0.2.0)
+    secp256k1rb (0.3.0)
       ffi (>= 1.16.3)
     securerandom (0.4.1)
     selenium-webdriver (4.44.0)
@@ -620,7 +620,7 @@ CHECKSUMS
   sass-embedded (1.77.5-x86_64-cygwin) sha256=11eeea03f15ae39b03a84bebf8d80f8824941d2cfde57b1c21dbb31d65de0dc3
   sass-embedded (1.77.5-x86_64-linux-android) sha256=e183bf5a0b3916eb3f5b3c7596ae44fd72edb0fe233dd00df48131271ed752ea
   sass-embedded (1.77.5-x86_64-linux-gnu) sha256=3000a6b984ea746eac1f0c9a17400134fe76c3d41b33436262ac82b5d153d7b4
-  secp256k1rb (0.2.0) sha256=e3dbd3c0d75dcbc12d370687762362eeec61b4c0934483c1fb8e1136eb0067f0
+  secp256k1rb (0.3.0) sha256=e021a693f27ae77f241b57a968d66246bb696b211137fc0bc4d0cf463e6867fb
   securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1
   selenium-webdriver (4.44.0) sha256=6f1df072529af369589c46f0e01132952aabb250cfd683c274d74dc1eb5d8477
   solid_cable (3.0.12) sha256=a168a54731a455d5627af48d8441ea3b554b8c1f6e6cd6074109de493e6b0460
