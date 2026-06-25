@@ -1,12 +1,10 @@
-<% content_for :title, "Editing member" %>
+<% content_for :title, "编辑钱包" %>
 
-<h1>Editing member</h1>
-
-<%= render "form", member: @member %>
-
-<br>
-
-<div>
-  <%= link_to "Show this member", @member %> |
-  <%= link_to "Back to members", members_path %>
+<div class="container py-4">
+  <h3 class="text-light">编辑钱包</h3>
+  <%= render "form", member: @member %>
+  <div class="mt-4">
+    <%= link_to "← 返回详情", @member, class: "text-light d-inline-block" %> |
+    <%= link_to "钱包列表", members_path %>
+  </div>
 </div>

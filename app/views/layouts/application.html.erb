@@ -21,15 +21,20 @@
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   </head>
 
-  <body class="bg-wuyelan">
+  <body class="bg-wuyelan main-size">
     <%= render "layouts/header" %>
-    <% if notice.present? %>
-      <div class="alert alert-success mb-4 rounded border" role="alert">
-        <%= notice %>
+    <div class="container">
+      <div class="col-sm-12">
+        <% if notice.present? %>
+          <div class="alert alert-success rounded border mb-0 mt-3 text-danger" role="alert">
+            <%= notice %>
+          </div>
+        <% end %>
       </div>
-    <% end %>
+    </div>
     <%= yield %>
     <%= render "layouts/footer" %>
   </body>

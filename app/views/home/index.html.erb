@@ -1,15 +1,15 @@
 <%# <div data-controller="auto-refresh" data-auto-refresh-inderval-value="30000"> %>
-  <div class="container py-4">
+  <div class="container py-3">
     <!-- 欢迎标题 -->
-    <div class="row mb-5">
+    <!--<div class="row">
       <div class="col-12">
-        <h1 class="text-light mb-3">TRON 自动化交易系统</h1>
-        <p class="text-light opacity-75 mb-0">基于波场链的智能策略执行平台</p>
+        <h1 class="text-light">TRON 自动化交易系统</h1>
+        <p class="text-light opacity-75">基于波场链的智能策略执行平台</p>
       </div>
-    </div>
+    </div>-->
 
     <!-- 系统状态提示 -->
-    <div class="row mb-4">
+    <div class="row">
       <div class="col-12">
         <div class="alert alert-<%= @system_status[:status] == 'normal' ? 'success' : 'warning' %> d-flex align-items-center">
           <i class="bi bi-<%= @system_status[:icon] %> me-2"></i>
@@ -22,9 +22,9 @@
     </div>
 
     <!-- 关键数据统计 -->
-    <div class="row mb-5">
-      <div class="col-6 col-md-3 mb-4">
-        <div class="card bg-card text-center p-3 rounded">
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="card bg-card text-center rounded">
           <div class="card-body">
             <h2 class="card-title text-light"><%= @total_members %></h2>
             <p class="card-text text-light opacity-75 mb-1">用户</p>
@@ -33,8 +33,8 @@
         </div>
       </div>
 
-      <div class="col-6 col-md-3 mb-4">
-        <div class="card bg-card text-center p-3 rounded">
+      <div class="col-6 col-md-3">
+        <div class="card bg-card text-center rounded">
           <div class="card-body">
             <h2 class="card-title text-light"><%= @total_bots %></h2>
             <p class="card-text text-light opacity-75 mb-1">机器人</p>
@@ -43,8 +43,8 @@
         </div>
       </div>
 
-      <div class="col-6 col-md-3 mb-4">
-        <div class="card bg-card text-center p-3 rounded">
+      <div class="col-6 col-md-3">
+        <div class="card bg-card text-center rounded">
           <div class="card-body">
             <h2 class="card-title text-light"><%= @total_blocks %></h2>
             <p class="card-text text-light opacity-75 mb-1">区块</p>
@@ -53,8 +53,8 @@
         </div>
       </div>
 
-      <div class="col-6 col-md-3 mb-4">
-        <div class="card bg-card text-center p-3 rounded">
+      <div class="col-6 col-md-3">
+        <div class="card bg-card text-center rounded">
           <div class="card-body">
             <h2 class="card-title text-light"><%= @total_bets %></h2>
             <p class="card-text text-light opacity-75 mb-1">下注</p>
@@ -65,32 +65,32 @@
     </div>
 
     <!-- 快速操作 -->
-    <div class="row mb-5">
+    <div class="row">
       <div class="col-12">
-        <h3 class="text-light mb-4">快速操作</h3>
-        <div class="row g-3">
+        <h3 class="text-light">快速操作</h3>
+        <div class="row g-3 mb-4">
           <div class="col-6 col-md-3">
             <a href="/members" data-turbo="false" class="btn btn-outline-light w-100 py-3 d-flex flex-column align-items-center">
               <i class="bi bi-wallet2 fs-4 mb-2"></i>
-              <span>钱包管理</span>
+              <span class="main-size">钱包管理</span>
             </a>
           </div>
           <div class="col-6 col-md-3">
             <a href="/home/strategy" data-turbo="false" class="btn btn-outline-light w-100 py-3 d-flex flex-column align-items-center">
               <i class="bi bi-lightning-charge fs-4 mb-2"></i>
-              <span>策略说明</span>
+              <span class="main-size">策略说明</span>
             </a>
           </div>
           <div class="col-6 col-md-3">
             <a href="/block_records" data-turbo="false" class="btn btn-outline-light w-100 py-3 d-flex flex-column align-items-center">
               <i class="bi bi-graph-up fs-4 mb-2"></i>
-              <span>区块监控</span>
+              <span class="main-size">区块监控</span>
             </a>
           </div>
           <div class="col-6 col-md-3">
             <a href="/bet_records" data-turbo="false" class="btn btn-outline-light w-100 py-3 d-flex flex-column align-items-center">
               <i class="bi bi-currency-exchange fs-4 mb-2"></i>
-              <span>下注记录</span>
+              <span class="main-size">下注记录</span>
             </a>
           </div>
         </div>
@@ -98,7 +98,7 @@
     </div>
 
 
-    <div class="row mb-5">
+    <div class="row mb-4">
       <%= render "home/last_bet" %>
       <%= render "home/last_block" %>
     </div>

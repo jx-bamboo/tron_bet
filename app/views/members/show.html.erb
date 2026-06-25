@@ -1,6 +1,6 @@
 <div class="container py-4">
   <% content_for :title, "Member: #{@member.username}" %>
-  <h1 class="text-light mb-4">钱包详细</h1>
+  <h3 class="text-light">钱包详细</h3>
   <%= render @member %>
 
   <!-- 单行布局 - 非常紧凑 -->
@@ -18,7 +18,7 @@
               <div class="row g-2">
                 <div class="col-3">
                   <div class="text-center">
-                    <div class="text-secondary main-size">启动资金</div>
+                    <div class="text-secondary">启动资金</div>
                     <div class="text-success fw-bold">
                       <%= number_with_precision(@member.bot.start_balance, precision: 2) %>
                     </div>
@@ -27,7 +27,7 @@
 
                 <div class="col-3">
                   <div class="text-center">
-                    <div class="text-secondary main-size">上次下注</div>
+                    <div class="text-secondary">上次下注</div>
                     <div class="<%= @member.bot.bet_amount_index.to_i > 0 ? 'text-warning' : 'text-secondary' %> fw-bold">
                       <%= @member.bot.bet_amount_index || 0 %>
                     </div>
@@ -36,7 +36,7 @@
 
                 <div class="col-3">
                   <div class="text-center">
-                    <div class="text-secondary main-size">当前失败</div>
+                    <div class="text-secondary">当前失败</div>
                     <div class="text-danger fw-bold">
                       <%= @member.bot.failed_times %>
                     </div>
@@ -45,7 +45,7 @@
 
                 <div class="col-3">
                   <div class="text-center">
-                    <div class="text-secondary main-size">当前方向</div>
+                    <div class="text-secondary">当前方向</div>
                     <div class="text-info fw-bold">
                       <%= @member.bot.current_parity_text.presence || "-" %>
                     </div>

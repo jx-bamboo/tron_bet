@@ -30,23 +30,23 @@
         <div class="form-text text-warning">⚠️ 私钥极其敏感，已采用非对称加密安全存储。</div>
       </div>
       <div class="mb-3">
-        <label class="form-check-label text-light" for="member_strategy">策略</label>
-
-        <select class="form-select" name="member[strategy]" aria-label="Default select example">
-          <option selected>请选择一个策略</option>
-          <option value="zl2">斩龙2</option>
-          <option value="zl3">斩龙3</option>
-          <option value="zl4">斩龙4</option>
-          <option value="zl5">斩龙5</option>
-          <option value="zl6">斩龙6</option>
-          <option value="zl7">斩龙7</option>
-          <option value="zl2_3">斩龙2~3</option>
-          <option value="zl5_8">斩龙5~8</option>
-          <option value="zl7_9">斩龙7~9</option>
-          <option value="zl2_3_m">斩龙2~3无限版</option>
-          <option value="zl3_4_m">斩龙3~4无限版</option>
-          <!-- <option value="zl7_9">斩龙7～9</option> -->
-        </select>
+        <%= form.label :strategy, "策略", class: "form-check-label text-light" %>
+        <%= form.select :strategy,
+              [
+                ["斩龙2", "zl2"],
+                ["斩龙3", "zl3"],
+                ["斩龙4", "zl4"],
+                ["斩龙5", "zl5"],
+                ["斩龙6", "zl6"],
+                ["斩龙7", "zl7"],
+                ["斩龙2~3", "zl2_3"],
+                ["斩龙5~8", "zl5_8"],
+                ["斩龙7~9", "zl7_9"],
+                ["斩龙2~3无限版", "zl2_3_m"],
+                ["斩龙3~4无限版", "zl3_4_m"]
+              ],
+              { prompt: "请选择一个策略" },
+              { class: "form-select" } %>
       </div>
       <div>
         <%= form.submit "提交", class: "btn btn-outline-secondary" %>

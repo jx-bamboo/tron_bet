@@ -12,8 +12,8 @@
             </span>
           </div>
         </div>
-        
-        <div class="card-body py-3">
+
+        <div class="card-body">
           <div class="row g-3">
             <!-- 今日盈利 -->
             <div class="col-md-6 col-lg-3">
@@ -34,7 +34,7 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- 总盈利 -->
             <div class="col-md-6 col-lg-3">
               <div class="stat-card-modern <%= @total_stats[:all_time][:total_profit] >= 0 ? 'profit-positive' : 'profit-negative' %>">
@@ -54,7 +54,7 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- 总收益 -->
             <div class="col-md-6 col-lg-3">
               <div class="stat-card-modern stat-neutral">
@@ -72,7 +72,7 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- 总下注 -->
             <div class="col-md-6 col-lg-3">
               <div class="stat-card-modern stat-neutral">
@@ -93,7 +93,7 @@
               </div>
             </div>
           </div>
-          
+
           <!-- 详细统计 -->
           <div class="detailed-stats mt-4 pt-3 border-top border-secondary">
             <div class="row g-3">
@@ -108,7 +108,7 @@
                   </div>
                 </div>
               </div>
-              
+
               <div class="col-md-4">
                 <div class="d-flex align-items-center">
                   <div class="me-3">
@@ -120,7 +120,7 @@
                   </div>
                 </div>
               </div>
-              
+
               <div class="col-md-4">
                 <div class="d-flex align-items-center">
                   <div class="me-3">
@@ -136,11 +136,11 @@
               </div>
             </div>
           </div>
-          
+
         </div>
       </div>
     </div>
-    
+
     <!-- 盈亏平衡分析卡片 -->
     <div class="col-lg-4">
       <div class="card card-modern h-100">
@@ -149,7 +149,7 @@
             <i class="bi bi-speedometer2 me-2 text-warning"></i><span class="text-light">盈亏平衡分析</span>
           </h5>
         </div>
-        
+
         <div class="card-body py-3 d-flex flex-column">
           <!-- 胜率对比 -->
           <div class="text-center">
@@ -160,7 +160,7 @@
                   <%= @total_stats[:all_time][:win_rate] %>%
                 </div>
               </div>
-              
+
               <div class="text-end">
                 <div class="text-secondary small">要求胜率</div>
                 <div class="text-warning fw-bold fs-4">
@@ -168,7 +168,7 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- 进度条 -->
             <div class="progress-container py-2">
               <div class="d-flex justify-content-between small">
@@ -176,23 +176,23 @@
                 <%# <span class="text-warning fw-bold">盈亏点</span> %>
                 <span class="text-secondary">100%</span>
               </div>
-              
+
               <div class="progress-modern">
-                <div class="progress-bar-current" 
+                <div class="progress-bar-current"
                     style="width: <%= [@total_stats[:all_time][:win_rate], 100].min %>%;">
                   <div class="progress-label">
                     <%= @total_stats[:all_time][:win_rate] %>%
                   </div>
                 </div>
-                
-                <div class="progress-marker" 
+
+                <div class="progress-marker"
                     style="left: <%= Member::BREAK_EVEN_WIN_RATE %>%;">
                   <div class="marker-dot"></div>
                   <div class="marker-label">平衡点</div>
                 </div>
               </div>
             </div>
-            
+
             <!-- 状态指示 -->
             <div class="py-2 mt-3">
               <% if @total_stats[:all_time][:win_rate] >= Member::BREAK_EVEN_WIN_RATE %>
@@ -208,10 +208,6 @@
               <% end %>
             </div>
           </div>
-          
-          
-
-
 
 
         </div>
@@ -420,15 +416,15 @@
     .stat-card-modern {
       padding: 0.75rem;
     }
-    
+
     .stat-card-modern .stat-value {
       font-size: 1.1rem;
     }
-    
+
     .progress-marker .marker-label {
       display: none;
     }
-    
+
     .progress-bar-current .progress-label {
       display: none;
     }
