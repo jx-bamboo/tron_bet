@@ -27,6 +27,8 @@ class Bot < ApplicationRecord
     check_count = case strategy_type
                   when "zl7_9"
                     get_strategy_count_for_zl7_9
+                  when "zl7_8"
+                    get_strategy_count_for_zl7_8
                   when "zl5_8"
                     get_strategy_count_for_zl5_8
                   when "zl2_3"
@@ -214,10 +216,13 @@ class Bot < ApplicationRecord
   # streak_parity 出现的长龙方向
   def execute_bet(block_record, streak_parity)
     bet_parity = streak_parity == 1 ? 0 : 1
-    if strategy_type == "zl3_4_m"
+    special_strategies = ["zl2_3_m", "zl3_4_m"]
+    strategy_p = ["zl2_p", "zl3_p"]
+
+    if special_strategies.include?(strategy_type)
       bet_amount = calculate_bet_amount_m(bet_parity)
-    elsif strategy_type == "zl2_3_m"
-      bet_amount = calculate_bet_amount_2_3_m(bet_parity)
+    elsif strategy_p.include?(strategy_type)
+      bet_amount = calculate_bet_amount_p(bet_parity)
     else
       bet_amount = calculate_bet_amount(bet_parity)
     end
@@ -248,13 +253,18 @@ class Bot < ApplicationRecord
     end
   end
 
-  def calculate_bet_amount_2_3_m(bet_parity)
-    if bet_parity == 1
-      failed_times.even? ? 101 : 51
-    else
-      failed_times.even? ? 100 : 50
-    end
+  def calculate_bet_amount_p(bet_parity)
+    bet_parity == 1 ? 51 : 50
   end
+
+  # 2~3 不同的金额策略
+  # def calculate_bet_amount_2_3_m(bet_parity)
+  #   if bet_parity == 1
+  #     failed_times.even? ? 101 : 51
+  #   else
+  #     failed_times.even? ? 100 : 50
+  #   end
+  # end
 
   # 计算下注金额 - 这是核心逻辑
   # bet_parity 就是要下注的方向，金额找相对应的方向数组（以第一个数组元素为基准）
@@ -343,6 +353,10 @@ class Bot < ApplicationRecord
       6
     when "zl7"
       7
+    when "zl2_p"
+      2
+    when "zl3_p"
+      3
     end
   end
 
@@ -360,6 +374,27 @@ class Bot < ApplicationRecord
       8
     when 5
       9
+    when 6
+      7
+    when 7
+      8
+    end
+  end
+
+  def get_strategy_count_for_zl7_8
+    case failed_times
+    when 0
+      7
+    when 1
+      8
+    when 2
+      7
+    when 3
+      8
+    when 4
+      7
+    when 5
+      8
     when 6
       7
     when 7

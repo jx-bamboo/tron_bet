@@ -164,12 +164,18 @@ module MembersHelper
       "斩龙2～3"
     when "zl5_8"
       "斩龙5~8"
+    when "zl7_8"
+      "斩龙7～8"
     when "zl7_9"
       "斩龙7~9"
     when "zl2_3_m"
-      "斩龙2～3无限版"
+      "斩龙2～3无限版(50,100)"
     when "zl3_4_m"
-      "斩龙3～4无限版"
+      "斩龙3～4无限版(50,100)"
+    when "zl2_p"
+      "斩龙2平推版(50)"
+    when "zl3_p"
+      "斩龙3平推版(50)"
     end
   end
 end
