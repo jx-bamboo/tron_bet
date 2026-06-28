@@ -217,7 +217,7 @@ class Bot < ApplicationRecord
   def execute_bet(block_record, streak_parity)
     bet_parity = streak_parity == 1 ? 0 : 1
     special_strategies = ["zl2_3_m", "zl3_4_m"]
-    strategy_p = ["zl2_p", "zl3_p"]
+    strategy_p = ["zl2_p", "zl3_p", "zl4_p"]
 
     if special_strategies.include?(strategy_type)
       bet_amount = calculate_bet_amount_m(bet_parity)
@@ -330,12 +330,20 @@ class Bot < ApplicationRecord
       "ChopStreak(2_3)"
     when "zl5_8"
       "ChopStreak(5_8)"
+    when "zl7_8"
+      "ChopStreak(7_8)"
     when "zl7_9"
       "ChopStreak(7_9)"
     when "zl2_3_m"
       "ChopStreak(2_3_m)"
     when "zl3_4_m"
       "ChopStreak(3_4_m)"
+    when "zl2_p"
+      "ChopStreak(2_p)"
+    when "zl3_p"
+      "ChopStreak(3_p)"
+    when "zl4_p"
+      "ChopStreak(4_p)"
     end
   end
 
@@ -357,6 +365,8 @@ class Bot < ApplicationRecord
       2
     when "zl3_p"
       3
+    when "zl4_p"
+      4
     end
   end
 

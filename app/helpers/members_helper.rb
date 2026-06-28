@@ -176,6 +176,8 @@ module MembersHelper
       "斩龙2平推版(50)"
     when "zl3_p"
       "斩龙3平推版(50)"
+    when "zl4_p"
+      "斩龙4平推版(50)"
     end
   end
 end
