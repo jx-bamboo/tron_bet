@@ -8,7 +8,7 @@ class Member < ApplicationRecord
   encrypts :tron_private_key
 
   has_one :bot, dependent: :destroy
-  has_many :bet_records, through: :bot, dependent: :delete_all
+  has_many :bet_records, through: :bot # 投注记录由 Bot 模型负责销毁，此处仅用作查询关联，不设 dependent
   has_many :transaction_logs, dependent: :delete_all
 
   after_create :set_default_status
