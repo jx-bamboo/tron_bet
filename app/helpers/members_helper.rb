@@ -178,6 +178,8 @@ module MembersHelper
       "斩龙3平推版(50)"
     when "zl4_p"
       "斩龙4平推版(50)"
+    when "sl2"
+      "顺龙2平推无限版(50)"
     end
   end
 end

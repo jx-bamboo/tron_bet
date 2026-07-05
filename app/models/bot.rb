@@ -49,7 +49,10 @@ class Bot < ApplicationRecord
       logger.info Paint[".... 区块不连续，跳过 ....", :yellow]
       return false
     end
-    return false unless long_streak_stop_chopping(check_count)
+
+    unless strategy_type == "sl2"
+      return false unless long_streak_stop_chopping(check_count)
+    end
 
     # puts Paint[".... Bot#{id} | Strategy: #{get_strategy_text_log} | Current Streak: #{calculate_current_streak_length(recent_records.map(&:parity))} ....", :blue]
     analyze_and_process(recent_records, check_count) # 分析数据并决定是否投注
@@ -90,7 +93,7 @@ class Bot < ApplicationRecord
       # 检查是否达到止损，根据命数决定，如果10条命，那么 > 9
       if new_failed_times > 7 &&
          strategy_type != "zl2_3_m" &&
-         strategy_type != "zl3_4_m"
+         strategy_type != "zl3_4_m" && strategy_type != "sl2"
         update!(status: :paused)
         last_bet.update!(note: "Consecutive bet losses reached stop-loss limit")
         puts Paint[".... Bot#{id} | 【#{member.username}】 | Loss failed: #{new_failed_times}", :red]
@@ -215,11 +218,22 @@ class Bot < ApplicationRecord
   # execute_bet 方法重构
   # streak_parity 出现的长龙方向
   def execute_bet(block_record, streak_parity)
-    bet_parity = streak_parity == 1 ? 0 : 1
+    # bet_parity = streak_parity == 1 ? 0 : 1
+    #
+    # 根据策略决定下注方向
+    if strategy_type == "sl2"
+      bet_parity = streak_parity          # 顺龙：下注相同方向
+    else
+      bet_parity = streak_parity == 1 ? 0 : 1  # 斩龙：下注相反方向
+    end
+
+    # 下注金额计算（通用）
     special_strategies = ["zl2_3_m", "zl3_4_m"]
     strategy_p = ["zl2_p", "zl3_p", "zl4_p"]
 
-    if special_strategies.include?(strategy_type)
+    if strategy_type == "sl2"
+      bet_amount = bet_parity == 0 ? 50 : 51
+    elsif special_strategies.include?(strategy_type)
       bet_amount = calculate_bet_amount_m(bet_parity)
     elsif strategy_p.include?(strategy_type)
       bet_amount = calculate_bet_amount_p(bet_parity)
@@ -367,6 +381,8 @@ class Bot < ApplicationRecord
       3
     when "zl4_p"
       4
+    when "sl2"
+      2
     end
   end
 

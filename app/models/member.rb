@@ -1,7 +1,7 @@
 class Member < ApplicationRecord
   validates :username, :tron_address, :tron_private_key, :strategy, presence: true
   validates :tron_address, :tron_private_key, uniqueness: true
-  validates :strategy, inclusion: { in: [ "zl2", "zl3", "zl4", "zl5", "zl6", "zl7", "zl2_3", "zl5_8", "zl7_8", "zl7_9", "zl2_3_m", "zl3_4_m", "zl2_p", "zl3_p", "zl4_p" ] }
+  validates :strategy, inclusion: { in: [ "zl2", "zl3", "zl4", "zl5", "zl6", "zl7", "zl2_3", "zl5_8", "zl7_8", "zl7_9", "zl2_3_m", "zl3_4_m", "zl2_p", "zl3_p", "zl4_p", "sl2" ] }
 
   enum :status, [ :inactive, :active ]
 
