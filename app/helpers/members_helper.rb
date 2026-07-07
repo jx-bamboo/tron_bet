@@ -148,6 +148,8 @@ module MembersHelper
 
   def get_strategy_text(strategy)
     case strategy
+    when "zl1"
+      "单跳1"
     when "zl2"
       "斩龙2"
     when "zl3"

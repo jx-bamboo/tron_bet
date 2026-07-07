@@ -328,6 +328,8 @@ class Bot < ApplicationRecord
 
   def get_strategy_text_log
     case strategy_type
+    when "zl1"
+      "ChopStreak(1)"
     when "zl2"
       "ChopStreak(2)"
     when "zl3"
@@ -363,6 +365,8 @@ class Bot < ApplicationRecord
 
   def get_strategy_for_count
     case strategy_type
+    when "zl1"
+      1
     when "zl2"
       2
     when "zl3"
