@@ -33,6 +33,10 @@ class Bot < ApplicationRecord
                     get_strategy_count_for_zl5_8
                   when "zl2_3"
                     get_strategy_count_for_zl2_3
+                  when "zl3_4"
+                    get_strategy_count_for_zl3_4
+                  when "zl3_5"
+                    get_strategy_count_for_zl3_5
                   when "zl2_3_m"
                     get_zl2_3_m
                   when "zl3_4_m"
@@ -471,6 +475,48 @@ class Bot < ApplicationRecord
       2
     when 7
       3
+    end
+  end
+
+  def get_strategy_count_for_zl3_4
+    case failed_times
+    when 0
+      3
+    when 1
+      4
+    when 2
+      3
+    when 3
+      4
+    when 4
+      3
+    when 5
+      4
+    when 6
+      3
+    when 7
+      4
+    end
+  end
+
+  def get_strategy_count_for_zl3_5
+    case failed_times
+    when 0
+      3
+    when 1
+      4
+    when 2
+      5
+    when 3
+      3
+    when 4
+      4
+    when 5
+      5
+    when 6
+      3
+    when 7
+      4
     end
   end
 
